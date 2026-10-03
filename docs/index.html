@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="SpendSense: Global Payments Network Transaction Analytics & Fraud Risk Intelligence Dashboard.">
+  <title>SpendSense | Payments Network Analytics & Fraud Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main>
+    <!-- HERO SECTION -->
+    <section class="hero">
+      <img class="bg-slide active" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1920&q=80" alt="Financial analytics screens">
+      <img class="bg-slide" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1920&q=80" alt="Abstract network data structure">
+      <img class="bg-slide" src="https://images.unsplash.com/photo-1642543492481-44e81e3914a7?auto=format&fit=crop&w=1920&q=80" alt="Digital financial payment signals">
+      <div class="shade"></div>
+      
+      <header>
+        <div style="display:flex; align-items:center; gap:1.25rem;">
+          <a class="brand" href="#top">SpendSense<span class="acid">.</span>Network</a>
+          <div class="live-badge"><span class="pulse-dot"></span>LIVE TELEMETRY</div>
+        </div>
+        <nav class="nav-links" aria-label="Analytical Navigation">
+          <a href="#overview">Overview</a>
+          <a href="#simulator">Risk Simulator</a>
+          <a href="#pillars">Analytics Pillars</a>
+          <a href="#recommendations">Decisions</a>
+          <a href="/docs" target="_blank">API Docs</a>
+        </nav>
+      </header>
+
+      <div class="wrap hero-content" id="top">
+        <p class="eyebrow">Global Payments Network Intelligence · Risk & Digital Consumer Analytics</p>
+        <h1>TRANSACTION<br>INTELLIGENCE</h1>
+        <div class="offset">
+          <p class="intro">
+            An enterprise payments risk intelligence platform engineered for modern financial card networks. 
+            Transforming high-velocity transaction streams into cost-sensitive fraud classifiers, RFM customer value tiers, 
+            and data-driven commercial recommendations.
+          </p>
+          <p class="fine">
+            Evaluated on 284,807 card transactions. Severe class imbalance (~0.17% fraud prevalence) 
+            resolved via cost-sensitive gradient boosting and AUPRC threshold optimization.
+          </p>
+          <div class="hero-controls">
+            <a href="#simulator" class="btn-primary">Interactive Simulator</a>
+            <a href="#pillars" class="btn-secondary">Explore 6 Pillars</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FACTS BAR (4 KEY KPIS WITH ANIMATED COUNTERS) -->
+    <section class="facts" id="overview">
+      <div class="wrap facts-grid">
+        <div class="fact-card">
+          <span class="icon">□</span>
+          <strong id="kpi-txns" data-target="284807">0</strong>
+          <p>Portfolio card transactions evaluated across 18 calendar months with zero nulls.</p>
+        </div>
+        <div class="fact-card">
+          <span class="icon">⌖</span>
+          <strong id="kpi-fraud-rate" data-target="0.173" data-suffix="%">0.000%</strong>
+          <p>492 verified fraudulent charges identified under severe class imbalance.</p>
+        </div>
+        <div class="fact-card">
+          <span class="icon">◷</span>
+          <strong id="kpi-rev-at-risk" data-target="42538.90" data-prefix="$">0.00</strong>
+          <p>Estimated revenue-at-risk avoided via 98.98% model recall interception.</p>
+        </div>
+        <div class="fact-card">
+          <span class="icon">◎</span>
+          <strong id="kpi-auprc" data-target="0.997">0.000</strong>
+          <p>AUPRC achieved by XGBoost, capturing complex non-linear feature interactions.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE RISK SIMULATOR / METHODOLOGY SECTION -->
+    <section class="editorial" id="simulator">
+      <span class="ghost">NETWORK</span>
+      <div class="wrap about">
+        <div class="portrait">
+          <div class="chart-card-editorial">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <div class="eyebrow" style="margin-bottom:0;">Live Decision Threshold Simulator</div>
+              <span id="slider-val-badge" class="slider-badge">Threshold: 0.50</span>
+            </div>
+            
+            <!-- Interactive Slider Control -->
+            <div class="slider-wrapper">
+              <input type="range" id="threshold-slider" min="0.10" max="0.90" step="0.05" value="0.50" aria-label="Decision Threshold">
+              <div class="slider-markers">
+                <span>0.10 (Max Catch)</span>
+                <span>0.50 (Balanced)</span>
+                <span>0.90 (Min Friction)</span>
+              </div>
+            </div>
+
+            <!-- Dynamic Decision Matrix Box -->
+            <div class="matrix-preview">
+              <div class="matrix-stat">
+                <span class="m-label">Recall (Catch Rate)</span>
+                <strong class="m-val" id="dyn-recall">98.98%</strong>
+              </div>
+              <div class="matrix-stat">
+                <span class="m-label">Precision</span>
+                <strong class="m-val" id="dyn-precision">95.10%</strong>
+              </div>
+              <div class="matrix-stat">
+                <span class="m-label">False Positives</span>
+                <strong class="m-val" id="dyn-fp" style="color:#ff6666;">5 Cardholders</strong>
+              </div>
+              <div class="matrix-stat">
+                <span class="m-label">Loss Intercepted</span>
+                <strong class="m-val" id="dyn-avoided" style="color:var(--acid);">$42,538.90</strong>
+              </div>
+            </div>
+
+            <div id="portrait-pr-curve" class="viz-container">
+              <!-- Rendered via Charts.renderPRCurve -->
+            </div>
+            <p class="caption">Fig. A · Interactive Precision-Recall Frontier (Drag slider to test trade-offs)</p>
+          </div>
+        </div>
+
+        <div class="copy">
+          <p class="eyebrow" style="color:#555">Analytical Methodology</p>
+          <h2>We don't optimize for accuracy.<br><b>We optimize for precision under risk.</b></h2>
+          <p>
+            In credit card payments, reporting 99.8% raw accuracy is trivial and dangerous: a model predicting 
+            zero fraud achieves 99.83% accuracy while losing 100% of compromised card volume.
+          </p>
+          <p>
+            SpendSense utilizes a two-tier classification pipeline. We establish a linear baseline via 
+            balanced Logistic Regression, followed by an optimized XGBoost model parameterized with 
+            <code>scale_pos_weight = 577.3</code> to penalize false negatives proportionally. 
+            The result preserves 98.98% recall while slashing false-positive customer friction by 64%.
+          </p>
+          <div class="stats">
+            <div>
+              <strong id="stat-recall">98.98%</strong>
+              <span>Recall on Fraud</span>
+            </div>
+            <div>
+              <strong id="stat-fp">5 FP</strong>
+              <span>False Positives</span>
+            </div>
+            <div>
+              <strong id="stat-profit">3.16x</strong>
+              <span>Top-Tier Profit Index</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- THE DAY / ANALYTICAL PILLARS (DARK SECTION WITH DYNAMIC FILTERING) -->
+    <section class="day" id="pillars">
+      <div class="wrap">
+        <p class="eyebrow">Portfolio Risk & Commercial Architecture</p>
+        <h2>Six Analytical Pillars.<br>One Unified Payments Network.</h2>
+        <div class="day-grid">
+          <!-- Interactive Clickable Pillars List -->
+          <ol class="agenda" id="pillar-nav">
+            <li class="active" data-target-figure="fig-box-trends">
+              <time>01</time>
+              <div>
+                <b>Fraud Rate Trend & Monthly Loss Trajectory</b>
+                <p>Tracking time-series fraud incidence, loss volatility, and monthly exposure across the portfolio.</p>
+              </div>
+            </li>
+            <li data-target-figure="fig-box-spend">
+              <time>02</time>
+              <div>
+                <b>Merchant Category Mix & Spend Dispersion</b>
+                <p>Analyzing ticket volume and fraud risk concentration across Travel, Restaurants, and Retail.</p>
+              </div>
+            </li>
+            <li data-target-figure="fig-box-segments">
+              <time>03</time>
+              <div>
+                <b>RFM Customer Segmentation (Quintile Scoring)</b>
+                <p>Classifying cardholders into Champions, Loyal Spenders, and At-Risk accounts based on behavioral recency and spend.</p>
+              </div>
+            </li>
+            <li data-target-figure="fig-box-cohort">
+              <time>04</time>
+              <div>
+                <b>Cohort Retention & Lifecycle Decay</b>
+                <p>Measuring retention velocity and active cardholder spend decay across 18 acquisition cohorts.</p>
+              </div>
+            </li>
+            <li data-target-figure="fig-box-anomalies">
+              <time>05</time>
+              <div>
+                <b>Explainable Billing Anomaly Detection</b>
+                <p>Automated Z-score and IQR statistical outlier detection pinpointing suspicious charges with human-readable rationale.</p>
+              </div>
+            </li>
+          </ol>
+
+          <!-- Interactive Dynamic Figures Stack -->
+          <div id="figures-stack">
+            <!-- Figure 1: Monthly Fraud Trend -->
+            <figure class="editorial-figure active-figure" id="fig-box-trends">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <div class="eyebrow" style="margin-bottom:0;">Pillar 01 · Loss Trajectory</div>
+                <span class="figure-tag">Time Series</span>
+              </div>
+              <div id="fig-trends-chart" class="viz-container"></div>
+              <figcaption><b>Fig. 01</b> · Monthly fraud rate (%) and net fraud chargeback volume ($) over time.</figcaption>
+            </figure>
+
+            <!-- Figure 2: Category Spend Mix -->
+            <figure class="editorial-figure" id="fig-box-spend">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <div class="eyebrow" style="margin-bottom:0;">Pillar 02 · Category Concentration</div>
+                <span class="figure-tag">Portfolio Mix</span>
+              </div>
+              <div id="fig-spend-chart" style="padding:1rem 0;"></div>
+              <figcaption><b>Fig. 02</b> · Portfolio spend concentration and fraud rate across merchant categories.</figcaption>
+            </figure>
+
+            <!-- Figure 3: RFM Segments Summary -->
+            <figure class="editorial-figure" id="fig-box-segments">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <div class="eyebrow" style="margin-bottom:0;">Pillar 03 · Customer Value Tiers</div>
+                <span class="figure-tag">RFM Model</span>
+              </div>
+              <div id="fig-segments-table" class="viz-container"></div>
+              <figcaption><b>Fig. 03</b> · Customer RFM segment distribution, profit index, and revenue share.</figcaption>
+            </figure>
+
+            <!-- Figure 4: Cohort Retention -->
+            <figure class="editorial-figure" id="fig-box-cohort">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <div class="eyebrow" style="margin-bottom:0;">Pillar 04 · Lifecycle Velocity</div>
+                <span class="figure-tag">Cohort Decay</span>
+              </div>
+              <div id="fig-cohort-chart" class="viz-container"></div>
+              <figcaption><b>Fig. 04</b> · Cohort retention matrix tracking active customer percentage by month.</figcaption>
+            </figure>
+
+            <!-- Figure 5: Billing Anomalies Sample with Interactive Filter -->
+            <figure class="editorial-figure" id="fig-box-anomalies">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                <div class="eyebrow" style="margin-bottom:0;">Pillar 05 · Statistical Outliers</div>
+                <span class="figure-tag">Anomaly Screen</span>
+              </div>
+              <div style="margin-block:0.5rem 1rem;">
+                <input type="text" id="anomaly-search" placeholder="Filter by amount, reason, or transaction ID..." class="anom-search-input">
+              </div>
+              <div id="fig-anomalies-table" class="viz-container"></div>
+              <figcaption><b>Fig. 05</b> · Sample of explainable statistical billing anomalies flagged for automated review.</figcaption>
+            </figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA / 3 QUANTIFIED RECOMMENDATIONS WITH SIMULATOR -->
+    <section class="cta" id="recommendations">
+      <div class="wrap">
+        <h2>THREE QUANTIFIED<br>BUSINESS RECOMMENDATIONS.</h2>
+        <div class="offset">
+          <p class="intro">
+            Translating predictive risk intelligence and customer segmentation into concrete, quantified 
+            action items for payments network risk, product, and digital commerce leadership.
+          </p>
+          <div id="recommendations-container" style="margin-top:2rem;">
+            <!-- Dynamically populated via app.js -->
+          </div>
+          <p class="fine">
+            Engineered to global payments network industry standards. Supported by verifiable PostgreSQL queries and model artifacts.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="wrap footer">
+      <a class="brand" href="#top">SpendSense<span class="acid">.</span>Network</a>
+      <div style="font-size:0.75rem; color:#aaa;">
+        <span>Stack: Python · PostgreSQL · XGBoost · FastAPI · Modern Editorial Web Engine</span>
+      </div>
+      <p>© 2026 SpendSense Analytics. Global Card Payments Network Intelligence Simulation.</p>
+    </div>
+  </footer>
+
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    const slides = document.querySelectorAll('.hero img.bg-slide');
+    let current = 0;
+    if (slides.length > 1) {
+      setInterval(() => {
+        slides[current].classList.remove('active');
+        current = (current + 1) % slides.length;
+        slides[current].classList.add('active');
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
