@@ -1,16 +1,17 @@
 """SpendSense — Vercel Serverless Production API
 
-Engineered for 1-click Vercel Serverless deployment with zero bloat (<15 MB bundle size).
-Serves the validated analytical outputs and ML model comparison generated
-from the 284,807 transaction pipeline.
+Path-Resilient FastAPI service supporting both direct and rewritten Vercel routes:
+- /api/overview and /overview
+- /api/fraud/model and /fraud/model
+- /api/health and /health
+Guarantees 100% route matching regardless of Vercel internal rewrite behavior.
 """
 
 import json
 from pathlib import Path
 from typing import Dict, Any, List
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
 
 # Base Directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,7 +28,6 @@ def load_json(filepath: Path) -> Dict[str, Any]:
     return {}
 
 
-# Load cached analytical results
 analytics_cache = load_json(CACHE_FILE)
 model_cache = load_json(MODEL_FILE)
 
@@ -37,7 +37,6 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -46,8 +45,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Use APIRouter so routes can be mounted both at root and under /api
+router = APIRouter()
 
-@app.get("/api/health")
+
+@router.get("/health")
 def health_check():
     has_cache = bool(analytics_cache)
     return {
@@ -66,7 +68,7 @@ def health_check():
     }
 
 
-@app.get("/api/overview")
+@router.get("/overview")
 def get_overview():
     ov = analytics_cache.get("overview", {})
     if not ov:
@@ -89,13 +91,13 @@ def get_overview():
     }
 
 
-@app.get("/api/spend")
+@router.get("/spend")
 def get_spend():
     cats = analytics_cache.get("spend", [])
     return {"categories": cats}
 
 
-@app.get("/api/segments")
+@router.get("/segments")
 def get_segments():
     segs = analytics_cache.get("segments", [])
     total_cust = sum(s.get("customer_count", 0) for s in segs) if segs else 4665
@@ -105,7 +107,7 @@ def get_segments():
     }
 
 
-@app.get("/api/cohorts")
+@router.get("/cohorts")
 def get_cohorts():
     cohort_data = analytics_cache.get("cohorts", {})
     return {
@@ -115,7 +117,7 @@ def get_cohorts():
     }
 
 
-@app.get("/api/profitability")
+@router.get("/profitability")
 def get_profitability():
     profs = analytics_cache.get("profitability", [])
     return {
@@ -127,7 +129,7 @@ def get_profitability():
     }
 
 
-@app.get("/api/anomalies")
+@router.get("/anomalies")
 def get_anomalies():
     anom_data = analytics_cache.get("anomalies", {})
     return {
@@ -138,19 +140,19 @@ def get_anomalies():
     }
 
 
-@app.get("/api/recommendations")
+@router.get("/recommendations")
 def get_recommendations():
     recs = analytics_cache.get("recommendations", [])
     return {"recommendations": recs}
 
 
-@app.get("/api/fraud/trends")
+@router.get("/fraud/trends")
 def get_fraud_trends():
     trends = analytics_cache.get("trends", [])
     return {"trends": trends}
 
 
-@app.get("/api/fraud/model")
+@router.get("/fraud/model")
 def get_fraud_model():
     if model_cache:
         lr_data = model_cache.get("logistic_regression", {})
@@ -196,3 +198,8 @@ def get_fraud_model():
         "pr_curve_xgb": [],
         "recommendation": "Deploy XGBoost: cuts false-positive alerts by 64% while maintaining 98.98% recall.",
     }
+
+
+# Mount router BOTH with /api prefix and at root
+app.include_router(router, prefix="/api")
+app.include_router(router)
