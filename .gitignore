@@ -41,10 +41,10 @@ data/**/*.db
 # Model artifacts
 ml/artifacts/*.joblib
 ml/artifacts/*.pkl
-ml/artifacts/*.json
+# Note: ml/artifacts/model_comparison.json is kept for API/Vercel responses
 
-# Precomputed analytics cache
-analytics/cache/*.json
+# Precomputed analytics cache (keep precomputed_analytics.json for serverless deployment)
+# analytics/cache/*.json
 
 # Jupyter
 .ipynb_checkpoints/
