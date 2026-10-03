@@ -76,7 +76,7 @@ def create_deck(output_path: Path):
     tf.word_wrap = True
     
     p = tf.paragraphs[0]
-    p.text = "AMERICAN EXPRESS · CLOSED-LOOP PAYMENTS SIMULATION"
+    p.text = "GLOBAL CARD PAYMENTS NETWORK · RISK & PORTFOLIO INTELLIGENCE"
     p.font.size = Pt(12)
     p.font.bold = True
     p.font.color.rgb = C_ACID
@@ -108,7 +108,7 @@ def create_deck(output_path: Path):
     cards_data = [
         ("01. Transaction Stream", "Kaggle European Cardholder dataset (~285K rows, 492 frauds, ~0.17% fraud rate). PCA components V1-V28, Time elapsed, and Amount. Rigorously cleaned and loaded into relational database."),
         ("02. Customer Enrichment", "Synthetic behavioral attributes generated for 5,000 cardholders: transaction dates across 18 months, merchant categories (Travel, Dining, Retail), and city/state coordinates. Explicitly flagged with is_synthetic=True."),
-        ("03. Closed-Loop Pillars", "Dual analytical pillars matching Amex intern job descriptions: Risk Modeling (Logistic Regression baseline to XGBoost) and Customer Lifetime Value (RFM segmentation, Cohort analysis, and Profitability index)."),
+        ("03. Unified Pillars", "Dual analytical pillars matching tier-1 card scheme analytics: Risk Modeling (Logistic Regression baseline to XGBoost) and Customer Lifetime Value (RFM segmentation, Cohort analysis, and Profitability index)."),
     ]
     for i, (head, body) in enumerate(cards_data):
         left = Inches(1.0 + i * 3.8)

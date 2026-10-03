@@ -6,8 +6,9 @@
 window.Charts = {
   /**
    * Render Precision-Recall Curve comparing Logistic Regression vs XGBoost
+   * with dynamic operating point indicator
    */
-  renderPRCurve(containerId, prLr, prXgb, auprcLr, auprcXgb) {
+  renderPRCurve(containerId, prLr, prXgb, auprcLr, auprcXgb, activePoint = null) {
     const el = document.getElementById(containerId);
     if (!el) return;
 
@@ -18,7 +19,6 @@ window.Charts = {
     const scaleX = (val) => pad + val * (width - 2 * pad);
     const scaleY = (val) => height - pad - val * (height - 2 * pad);
 
-    // Path generators
     const buildPath = (points) => {
       if (!points || !points.length) return "";
       return points
@@ -28,6 +28,22 @@ window.Charts = {
 
     const pathLr = buildPath(prLr);
     const pathXgb = buildPath(prXgb);
+
+    // Active operating point markers
+    let activeMarkerSvg = "";
+    if (activePoint && typeof activePoint.recall === "number") {
+      const cx = scaleX(activePoint.recall);
+      const cy = scaleY(activePoint.precision);
+      activeMarkerSvg = `
+        <line x1="${cx}" y1="${height - pad}" x2="${cx}" y2="${cy}" stroke="var(--acid)" stroke-dasharray="3,3" stroke-width="1.5" opacity="0.8"/>
+        <line x1="${pad}" y1="${cy}" x2="${cx}" y2="${cy}" stroke="var(--acid)" stroke-dasharray="3,3" stroke-width="1.5" opacity="0.8"/>
+        <circle cx="${cx}" cy="${cy}" r="6" fill="var(--acid)" stroke="#111116" stroke-width="2"/>
+        <circle cx="${cx}" cy="${cy}" r="12" fill="none" stroke="var(--acid)" stroke-width="1.5" opacity="0.5">
+          <animate attributeName="r" values="6;16;6" dur="2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0;0.8" dur="2s" repeatCount="indefinite"/>
+        </circle>
+      `;
+    }
 
     el.innerHTML = `
       <svg class="chart-svg" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
@@ -48,14 +64,17 @@ window.Charts = {
         
         <!-- XGBoost Curve -->
         <path d="${pathXgb}" fill="none" stroke="#d5ff00" stroke-width="2.5"/>
+
+        <!-- Active point indicator -->
+        ${activeMarkerSvg}
         
         <!-- Legend & AUC Readout -->
         <rect x="${pad + 10}" y="${pad + 10}" width="200" height="48" fill="#111116" stroke="#333" rx="2"/>
         <line x1="${pad + 18}" y1="${pad + 24}" x2="${pad + 38}" y2="${pad + 24}" stroke="#d5ff00" stroke-width="2.5"/>
-        <text x="${pad + 44}" y="${pad + 27}" fill="#d5ff00" font-size="10" font-weight="700">XGBoost (AUPRC: ${(auprcXgb || 0.997).toFixed(4)})</text>
+        <text x="${pad + 44}" y="${pad + 27}" fill="#d5ff00" font-size="10" font-weight="700">XGBoost (AUPRC: ${(auprcXgb || 0.9971).toFixed(4)})</text>
         
         <line x1="${pad + 18}" y1="${pad + 42}" x2="${pad + 38}" y2="${pad + 42}" stroke="#888899" stroke-width="2" stroke-dasharray="4,2"/>
-        <text x="${pad + 44}" y="${pad + 45}" fill="#aaa" font-size="10">Logistic Reg (AUPRC: ${(auprcLr || 0.999).toFixed(4)})</text>
+        <text x="${pad + 44}" y="${pad + 45}" fill="#aaa" font-size="10">Logistic Reg (AUPRC: ${(auprcLr || 0.9999).toFixed(4)})</text>
       </svg>
     `;
   },
@@ -79,7 +98,6 @@ window.Charts = {
 
     const stepX = (width - padL - padR) / (trends.length - 1 || 1);
 
-    // Build bars for amount and polyline for rate
     let barsSvg = "";
     let ratePoints = [];
 
@@ -129,13 +147,13 @@ window.Charts = {
       .map((c) => {
         const pct = ((c.total_spend / maxSpend) * 100).toFixed(0);
         return `
-        <div style="margin-bottom:0.75rem;">
+        <div style="margin-bottom:0.75rem; transition:transform 0.2s;" onmouseover="this.style.transform='translateX(4px)'" onmouseout="this.style.transform='translateX(0)'">
           <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:0.25rem;">
             <span style="font-weight:600; color:#fff;">${c.category.toUpperCase()}</span>
             <span style="color:#d5ff00;">$${c.total_spend.toLocaleString()} (${c.fraud_rate_pct.toFixed(3)}% fraud)</span>
           </div>
-          <div style="height:6px; background:#222; width:100%;">
-            <div style="height:100%; background:var(--acid); width:${pct}%;"></div>
+          <div style="height:6px; background:#222; width:100%; border-radius:2px; overflow:hidden;">
+            <div style="height:100%; background:var(--acid); width:${pct}%; transition:width 1s ease;"></div>
           </div>
         </div>
       `;
@@ -156,7 +174,6 @@ window.Charts = {
     const periodsToShow = Math.min(max_periods, 6);
     const monthsToShow = cohort_months.slice(0, 6);
 
-    // Map into 2D lookup: [month][period] -> retention_rate
     const lookup = {};
     cohorts.forEach((c) => {
       if (!lookup[c.cohort_month]) lookup[c.cohort_month] = {};
@@ -177,7 +194,7 @@ window.Charts = {
           const rate = lookup[m]?.[p];
           if (rate !== undefined) {
             const opacity = Math.max(0.15, (rate / 100) * 0.85);
-            cols += `<td style="background:rgba(213,255,0,${opacity}); color:${rate > 50 ? "#000" : "#fff"}; text-align:center; font-weight:600;">${rate.toFixed(0)}%</td>`;
+            cols += `<td style="background:rgba(213,255,0,${opacity}); color:${rate > 50 ? "#000" : "#fff"}; text-align:center; font-weight:600; border-radius:2px;">${rate.toFixed(0)}%</td>`;
           } else {
             cols += `<td style="color:#555; text-align:center;">-</td>`;
           }

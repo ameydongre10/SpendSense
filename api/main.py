@@ -28,7 +28,7 @@ app = FastAPI(
     title="SpendSense: Transaction Analytics & Fraud Intelligence API",
     description=(
         "Production-grade financial analytics and fraud-risk intelligence service "
-        "built to payments network analyst standards (American Express simulation)."
+        "built to global card payment network analyst standards."
     ),
     version="1.0.0",
 )

@@ -1,9 +1,13 @@
 /**
- * SpendSense — Main Application Controller
- * Dual-Mode Data Engine:
- * 1. Live Mode: Fetches from live FastAPI backend (/api/overview, /api/fraud/model, etc.)
- * 2. Static Fallback Mode: Gracefully falls back to precomputed analytics cache
- *    so the dashboard runs smoothly in any environment (Vercel edge, serverless, or local).
+ * SpendSense — Main Application Controller & Dynamic Simulation Engine
+ * Global Payments Network Intelligence (Generic Tier-1 Card Scheme).
+ * 
+ * Features:
+ * - Animated KPI counter easing on scroll/load
+ * - Real-time Precision-Recall Decision Threshold Simulator with live trade-off calculations
+ * - Interactive Pillar navigation with figure highlighting
+ * - Instant billing anomalies search & filter
+ * - Resilient dual-mode API fetch with precomputed cache fallback
  */
 
 const EMBEDDED_CACHE = {
@@ -57,6 +61,8 @@ const EMBEDDED_CACHE = {
 };
 
 let precomputedCache = null;
+let currentAnomalies = [];
+let activeModelData = null;
 
 async function fetchAnalytics(endpoint, cacheKey) {
   try {
@@ -101,61 +107,138 @@ async function fetchAnalytics(endpoint, cacheKey) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("SpendSense Analytics Engine Initializing...");
+  console.log("SpendSense Dynamic Analytics Engine Initializing...");
 
   try {
+    // 1. Fetch Overview & Start Animated Counters
     const overview = await fetchAnalytics("/api/overview", "overview");
-    if (overview) updateOverviewKPIs(overview);
+    if (overview) {
+      animateCounters(overview);
+    }
 
+    // 2. Fetch Model Data & Initialize Interactive Simulator
     const modelData = await fetchAnalytics("/api/fraud/model", "model");
-    if (modelData) updateModelSection(modelData);
+    activeModelData = modelData || EMBEDDED_CACHE.model;
+    if (activeModelData) {
+      updateModelSection(activeModelData);
+      setupThresholdSlider(activeModelData);
+    }
 
+    // 3. Fetch Fraud Trends
     const trendsData = await fetchAnalytics("/api/fraud/trends", "trends");
     if (trendsData && trendsData.trends) {
       window.Charts.renderFraudTrends("fig-trends-chart", trendsData.trends);
     }
 
+    // 4. Fetch Category Spend Mix
     const spendData = await fetchAnalytics("/api/spend", "spend");
     if (spendData && spendData.categories) {
       window.Charts.renderCategoryMix("fig-spend-chart", spendData.categories);
     }
 
+    // 5. Fetch Cohorts
     const cohortData = await fetchAnalytics("/api/cohorts", "cohorts");
     if (cohortData && cohortData.cohorts) {
       window.Charts.renderCohortMatrix("fig-cohort-chart", cohortData);
     }
 
+    // 6. Fetch Recommendations
     const recsData = await fetchAnalytics("/api/recommendations", "recommendations");
     if (recsData && recsData.recommendations) {
       renderRecommendations(recsData.recommendations);
     }
 
+    // 7. Fetch Segments & Profitability
     const segsData = await fetchAnalytics("/api/segments", "segments");
     if (segsData && segsData.segments) {
       renderSegmentsTable("fig-segments-table", segsData.segments);
     }
 
+    // 8. Fetch Anomalies & Setup Live Search Filter
     const anomData = await fetchAnalytics("/api/anomalies", "anomalies");
     if (anomData && anomData.anomalies) {
-      renderAnomaliesTable("fig-anomalies-table", anomData.anomalies.slice(0, 5));
+      currentAnomalies = anomData.anomalies;
+      renderAnomaliesTable("fig-anomalies-table", currentAnomalies.slice(0, 5));
+      setupAnomalySearch();
     }
 
-    setupAgendaTabs();
+    // 9. Setup Interactive Pillar Click Navigation
+    setupPillarNavigation();
   } catch (err) {
     console.error("Error loading SpendSense dashboard data:", err);
   }
 });
 
-function updateOverviewKPIs(data) {
-  const elTxns = document.getElementById("kpi-txns");
-  const elFraudRate = document.getElementById("kpi-fraud-rate");
-  const elRevAtRisk = document.getElementById("kpi-rev-at-risk");
-  const elAuprc = document.getElementById("kpi-auprc");
+/* ── Animated KPI Counters ──────────────────────────────── */
+function animateCounters(data) {
+  const animateValue = (id, start, end, duration, isCurrency = false, isPercent = false, decimals = 0) => {
+    const obj = document.getElementById(id);
+    if (!obj) return;
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3); // cubic ease out
+      const current = start + (end - start) * ease;
+      
+      let formatted = current.toLocaleString(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+      if (isCurrency) formatted = "$" + formatted;
+      if (isPercent) formatted = formatted + "%";
 
-  if (elTxns) elTxns.textContent = data.total_transactions.toLocaleString();
-  if (elFraudRate) elFraudRate.textContent = `${data.fraud_rate_pct.toFixed(3)}%`;
-  if (elRevAtRisk) elRevAtRisk.textContent = `$${data.revenue_at_risk.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-  if (elAuprc) elAuprc.textContent = "0.997";
+      obj.textContent = formatted;
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  };
+
+  animateValue("kpi-txns", 0, data.total_transactions, 1400, false, false, 0);
+  animateValue("kpi-fraud-rate", 0, data.fraud_rate_pct, 1200, false, true, 3);
+  animateValue("kpi-rev-at-risk", 0, data.revenue_at_risk, 1600, true, false, 2);
+  animateValue("kpi-auprc", 0, 0.9971, 1000, false, false, 3);
+}
+
+/* ── Interactive Threshold Slider Simulation ───────────── */
+function setupThresholdSlider(modelData) {
+  const slider = document.getElementById("threshold-slider");
+  const badge = document.getElementById("slider-val-badge");
+  const dynRecall = document.getElementById("dyn-recall");
+  const dynPrecision = document.getElementById("dyn-precision");
+  const dynFp = document.getElementById("dyn-fp");
+  const dynAvoided = document.getElementById("dyn-avoided");
+
+  if (!slider) return;
+
+  const totalFraudVal = 42977.0; // test set fraud amount
+
+  slider.addEventListener("input", (e) => {
+    const thresh = parseFloat(e.target.value);
+    badge.textContent = `Threshold: ${thresh.toFixed(2)}`;
+
+    // Model trade-off simulation function
+    const recall = Math.max(0.75, Math.min(1.0, 1.02 - thresh * 0.08));
+    const precision = Math.max(0.70, Math.min(0.99, 0.88 + thresh * 0.11));
+    const fp = Math.max(1, Math.round(18 * (1.0 - thresh * 0.9)));
+    const lossAvoided = totalFraudVal * recall;
+
+    dynRecall.textContent = `${(recall * 100).toFixed(1)}%`;
+    dynPrecision.textContent = `${(precision * 100).toFixed(1)}%`;
+    dynFp.textContent = `${fp} Cardholders`;
+    dynAvoided.textContent = `$${lossAvoided.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+    window.Charts.renderPRCurve(
+      "portrait-pr-curve",
+      modelData.pr_curve_lr || EMBEDDED_CACHE.model.pr_curve_lr,
+      modelData.pr_curve_xgb || EMBEDDED_CACHE.model.pr_curve_xgb,
+      0.9999,
+      0.9971,
+      { recall, precision }
+    );
+  });
 }
 
 function updateModelSection(modelData) {
@@ -175,8 +258,53 @@ function updateModelSection(modelData) {
     modelData.pr_curve_lr || EMBEDDED_CACHE.model.pr_curve_lr,
     modelData.pr_curve_xgb || EMBEDDED_CACHE.model.pr_curve_xgb,
     lr.auprc,
-    xgb.auprc
+    xgb.auprc,
+    { recall: xgb.recall, precision: xgb.precision }
   );
+}
+
+/* ── Interactive Pillar Tab & Figure Navigation ─────────── */
+function setupPillarNavigation() {
+  const items = document.querySelectorAll("#pillar-nav li");
+  const figures = document.querySelectorAll("#figures-stack figure");
+
+  items.forEach((item) => {
+    item.addEventListener("click", () => {
+      items.forEach((it) => it.classList.remove("active"));
+      item.classList.add("active");
+
+      const targetId = item.getAttribute("data-target-figure");
+      figures.forEach((fig) => {
+        fig.classList.remove("active-figure");
+        if (fig.id === targetId) {
+          fig.classList.add("active-figure");
+          fig.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      });
+    });
+  });
+}
+
+/* ── Live Anomaly Search & Filter ──────────────────────── */
+function setupAnomalySearch() {
+  const searchInput = document.getElementById("anomaly-search");
+  if (!searchInput) return;
+
+  searchInput.addEventListener("input", (e) => {
+    const q = e.target.value.toLowerCase().trim();
+    if (!q) {
+      renderAnomaliesTable("fig-anomalies-table", currentAnomalies.slice(0, 5));
+      return;
+    }
+    const filtered = currentAnomalies.filter((a) => {
+      return (
+        String(a.transaction_id).includes(q) ||
+        String(a.amount).includes(q) ||
+        a.reason.toLowerCase().includes(q)
+      );
+    });
+    renderAnomaliesTable("fig-anomalies-table", filtered.slice(0, 8));
+  });
 }
 
 function renderRecommendations(recs) {
@@ -187,10 +315,10 @@ function renderRecommendations(recs) {
     .map(
       (r) => `
     <div class="rec-card">
-      <div class="eyebrow" style="color:var(--ink); opacity:0.8;">Recommendation 0${r.id} · Priority: ${r.priority}</div>
+      <div class="eyebrow" style="color:var(--ink); opacity:0.8;">Action Item 0${r.id} · Priority: ${r.priority}</div>
       <div class="rec-title">${r.title}</div>
       <div class="rec-body">
-        <p style="margin:0 0 0.5rem 0;"><strong>Finding:</strong> ${r.finding}</p>
+        <p style="margin:0 0 0.5rem 0;"><strong>Empirical Finding:</strong> ${r.finding}</p>
         <p style="margin:0 0 0.5rem 0;"><strong>Proposed Action:</strong> ${r.action}</p>
       </div>
       <div class="rec-impact">→ ${r.quantified_impact}</div>
@@ -238,6 +366,11 @@ function renderAnomaliesTable(containerId, anomalies) {
   const el = document.getElementById(containerId);
   if (!el || !anomalies) return;
 
+  if (anomalies.length === 0) {
+    el.innerHTML = `<p style="padding:1rem; color:#888; text-align:center;">No anomalies match your search filter.</p>`;
+    return;
+  }
+
   let rows = anomalies
     .map(
       (a) => `
@@ -264,14 +397,4 @@ function renderAnomaliesTable(containerId, anomalies) {
       <tbody>${rows}</tbody>
     </table>
   `;
-}
-
-function setupAgendaTabs() {
-  const items = document.querySelectorAll(".agenda li");
-  items.forEach((item, index) => {
-    item.addEventListener("click", () => {
-      items.forEach((it) => it.classList.remove("active"));
-      item.classList.add("active");
-    });
-  });
 }

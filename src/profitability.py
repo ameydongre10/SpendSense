@@ -1,8 +1,8 @@
 """SpendSense — Customer Segment Profitability Pipeline
 
 PROFITABILITY MODELING METHODOLOGY:
-In a payments network (e.g. American Express closed-loop model), cardholder
-value is driven by spend volume (merchant discount revenue) minus network losses (fraud write-offs).
+In a modern payments card network (e.g. Mastercard, Visa, or closed-loop networks), cardholder
+value is driven by spend volume (merchant discount / interchange revenue) minus network losses (fraud write-offs).
 
 AVAILABLE DATA-DERIVED INPUTS:
 - Total spend volume per segment ($)

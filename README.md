@@ -6,7 +6,7 @@
 [![Framework](https://img.shields.io/badge/API-FastAPI-green.svg)](https://fastapi.tiangolo.com/)
 [![Tests](https://img.shields.io/badge/Tests-14%20Passed%20(100%25)-brightgreen.svg)](https://pytest.org/)
 
-A production-grade payments-network analytics and fraud-risk intelligence system built to mirror the day-to-day work of an **American Express Data Analytics / Risk / Digital Analytics Intern**.
+A production-grade payments-network analytics and fraud-risk intelligence system built to mirror the day-to-day work of a **Senior Payments Network Risk & Portfolio Analytics Engineer (applicable to Mastercard, Visa, or global card schemes)**.
 
 SpendSense bridges the gap between **technical analytics rigor** (PostgreSQL, Python, XGBoost, AUPRC, RFM, Cohorts) and **executive business communication** (an interactive editorial dashboard, quantified recommendations, and a formal PowerPoint deck).
 
@@ -35,7 +35,7 @@ SpendSense bridges the gap between **technical analytics rigor** (PostgreSQL, Py
 
 ## Executive Summary & Domain Context
 
-American Express operates a **closed-loop payments network**: it issues cards, manages cardholder relationships, acquires merchants, and processes transaction streams directly. Unlike open networks, Amex captures end-to-end transaction telemetry, creating two core analytical mandates:
+Modern card schemes and payments networks (e.g. Mastercard, Visa, and closed-loop card networks) operate multi-sided financial ecosystems: they issue cards, manage cardholder accounts, acquire merchants, and process high-throughput transaction streams. This creates two core analytical mandates:
 
 1. **Risk Track (Credit & Fraud Risk):** Intercepting fraudulent charges before settlement without creating friction for legitimate cardholders.
 2. **Digital & Consumer Services Track:** Segmenting cardholder spending patterns (RFM) to drive spend acceleration, loyalty retention, and net portfolio profitability.
@@ -191,7 +191,7 @@ Tracking 18 acquisition cohorts across subsequent months:
 
 ## Customer Segment Profitability
 
-Calculated using Amex network commercial economics:
+Calculated using global payments network commercial economics:
 $$\text{Gross Revenue} = \text{Spend Volume} \times 2.50\% \text{ (Take Rate)}$$
 $$\text{Net Contribution} = \text{Gross Revenue} - \text{Observed Fraud Losses}$$
 $$\text{Profit Index} = \frac{\text{Segment Net Contribution per Customer}}{\text{Portfolio Average Contribution per Customer}}$$
