@@ -1,0 +1,4 @@
+# This directory holds the raw Kaggle Credit Card Fraud Detection dataset.
+# Download from: https://www.kaggle.com/datasets/mlg-ulb/creditcardfraud
+# Place creditcard.csv in this directory.
+# This file is NOT committed to git (see .gitignore).

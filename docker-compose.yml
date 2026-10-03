@@ -1,0 +1,26 @@
+# SpendSense — Docker Compose
+# Provides PostgreSQL for the analytical database.
+# The application code runs on the host; only the database is containerized.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: spendsense_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-spendsense}
+      POSTGRES_USER: ${POSTGRES_USER:-spendsense_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_use_strong_password}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-spendsense_user} -d ${POSTGRES_DB:-spendsense}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

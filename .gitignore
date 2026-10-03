@@ -1,0 +1,60 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data files (too large for git)
+data/raw/*.csv
+data/raw/*.zip
+data/processed/*.csv
+data/processed/*.pkl
+data/processed/*.joblib
+*.db
+data/*.db
+data/**/*.db
+
+# Model artifacts
+ml/artifacts/*.joblib
+ml/artifacts/*.pkl
+ml/artifacts/*.json
+
+# Precomputed analytics cache
+analytics/cache/*.json
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Node
+node_modules/
+
+# PostgreSQL data volume
+pgdata/
+
+# Logs
+*.log
+logs/
