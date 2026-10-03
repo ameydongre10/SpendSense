@@ -83,7 +83,7 @@ SpendSense simulates both tracks on **284,807 card transactions**, addressing se
    ┌───────────────────────────┐                   ┌───────────────────────────┐
    │    EDITORIAL DASHBOARD    │                   │   EXECUTIVE PPTX DECK     │
    │  - Strict index.html Spec │                   │  - 6 Widescreen Slides    │
-   │  - Archivo Typography     │                   │  - Amex Analyst Standards │
+   │  - Archivo Typography     │                   │  - Executive Standards    │
    │  - Ink/Acid/Paper Palette │                   │  - 3 Actionable Decisions │
    │  - Dynamic SVG Visuals    │                   │  - Quantified Commercials │
    └───────────────────────────┘                   └───────────────────────────┘

@@ -31,6 +31,7 @@ app = FastAPI(
         "built to global card payment network analyst standards."
     ),
     version="1.0.0",
+    redirect_slashes=False,
 )
 
 # Enable CORS for development

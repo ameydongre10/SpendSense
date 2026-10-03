@@ -35,6 +35,7 @@ app = FastAPI(
     title="SpendSense: Transaction Analytics & Fraud Intelligence API",
     description="Payments network analytics and fraud risk platform (Vercel Serverless).",
     version="1.0.0",
+    redirect_slashes=False,
 )
 
 app.add_middleware(

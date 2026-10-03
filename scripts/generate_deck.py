@@ -1,6 +1,6 @@
 """SpendSense — Business Recommendation Deck Generator
 
-Generates a professional 6-slide PowerPoint presentation matching American Express
+Generates a professional 6-slide PowerPoint presentation matching Global Payments Network
 analyst-standard deliverable requirements:
 - Slide 1: Executive Summary & Closed-Loop Payments Problem
 - Slide 2: Data Foundation & Methodology (Kaggle Dataset + Synthetic Enrichment)
@@ -23,10 +23,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from src.database import execute_sql
 
-# Amex / SpendSense Palette
+# SpendSense Global Theme Palette
 C_DARK_NAVY = RGBColor(17, 24, 39)    # #111827
 C_SLATE = RGBColor(30, 41, 59)        # #1e293b
-C_CYAN = RGBColor(0, 163, 224)        # Amex Blue #00a3e0
+C_CYAN = RGBColor(0, 163, 224)        # Card Scheme Blue #00a3e0
 C_ACID = RGBColor(213, 255, 0)        # #d5ff00
 C_WHITE = RGBColor(255, 255, 255)
 C_MUTED = RGBColor(156, 163, 175)     # #9ca3af
