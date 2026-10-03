@@ -1,9 +1,0 @@
-# SpendSense — Vercel Serverless API Dependencies
-# Lightweight bundle to stay well within Vercel's 250MB Lambda size limit
-fastapi>=0.100,<1
-pydantic>=2.0,<3
-uvicorn>=0.23,<1
-sqlalchemy>=2.0,<3
-psycopg2-binary>=2.9,<3
-python-dotenv>=1.0,<2
-joblib>=1.3,<2
