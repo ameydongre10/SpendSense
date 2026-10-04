@@ -722,3 +722,176 @@ footer {
     display: none;
   }
 }
+
+/* ── Loading / Error / Empty States ─────────────────────── */
+.loading-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  gap: 0.75rem;
+  color: #666;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.loading-skeleton .spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(213, 255, 0, 0.2);
+  border-top-color: var(--acid);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  gap: 0.5rem;
+  color: #ff6666;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 1rem;
+}
+
+.error-state .error-icon {
+  font-size: 1.5rem;
+}
+
+.error-state .error-detail {
+  color: #888;
+  font-size: 0.72rem;
+  margin-top: 0.25rem;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  gap: 0.4rem;
+  color: #666;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* ── Data Source Indicator ─────────────────────────────── */
+.data-source-badge {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.data-source-badge.live {
+  background: rgba(213, 255, 0, 0.15);
+  color: var(--acid);
+  border: 1px solid rgba(213, 255, 0, 0.3);
+}
+
+.data-source-badge.cached {
+  background: rgba(255, 165, 0, 0.12);
+  color: #ffa500;
+  border: 1px solid rgba(255, 165, 0, 0.3);
+}
+
+.data-source-badge.offline {
+  background: rgba(255, 102, 102, 0.12);
+  color: #ff6666;
+  border: 1px solid rgba(255, 102, 102, 0.3);
+}
+
+/* ── Active Nav Scroll Spy ─────────────────────────────── */
+nav.nav-links a.active-link {
+  opacity: 1;
+  color: var(--acid);
+}
+
+/* ── Mobile Table Scroll ───────────────────────────────── */
+@media (max-width: 750px) {
+  .viz-container {
+    min-height: 180px;
+    -webkit-overflow-scrolling: touch;
+  }
+  table.data-table-editorial {
+    font-size: 0.72rem;
+    min-width: 400px;
+  }
+  table.data-table-editorial th,
+  table.data-table-editorial td {
+    padding: 0.4rem;
+  }
+  .chart-card-editorial {
+    padding: 1rem;
+  }
+  .matrix-preview .m-val {
+    font-size: 0.8rem;
+  }
+  .slider-markers {
+    font-size: 0.55rem;
+  }
+  .data-source-badge {
+    bottom: 0.5rem;
+    right: 0.5rem;
+    font-size: 0.5rem;
+  }
+}
+
+/* ── Mobile Nav Toggle ─────────────────────────────────── */
+.nav-toggle {
+  display: none;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  font-size: 1.2rem;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+@media (max-width: 750px) {
+  .nav-toggle {
+    display: block;
+  }
+  nav.nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: clamp(1.5rem, 5vw, 4rem);
+    background: rgba(17, 17, 22, 0.95);
+    backdrop-filter: blur(10px);
+    flex-direction: column;
+    padding: 1rem 1.5rem;
+    gap: 1rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    min-width: 200px;
+  }
+  nav.nav-links.open {
+    display: flex;
+  }
+}

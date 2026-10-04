@@ -30,12 +30,28 @@ def get_fraud_trends():
     """Retrieve monthly fraud rate and loss trends over time."""
     try:
         trends = get_monthly_fraud_trends()
-        return FraudTrendsResponse(
-            trends=[FraudTrendPoint(**t) for t in trends]
-        )
+        if trends:
+            return FraudTrendsResponse(
+                trends=[FraudTrendPoint(**t) for t in trends]
+            )
     except Exception as e:
-        logger.error("Error retrieving fraud trends: %s", e)
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.warning("Error retrieving fraud trends from DB: %s, falling back to cache.", e)
+
+    # Fallback to precomputed analytics cache
+    cache_path = Config.PROJECT_ROOT / "analytics" / "cache" / "precomputed_analytics.json"
+    if cache_path.exists():
+        try:
+            with open(cache_path, "r", encoding="utf-8") as f:
+                c_data = json.load(f)
+            cached_trends = c_data.get("trends", [])
+            if cached_trends:
+                return FraudTrendsResponse(
+                    trends=[FraudTrendPoint(**t) for t in cached_trends]
+                )
+        except Exception:
+            pass
+
+    raise HTTPException(status_code=500, detail="Unable to retrieve fraud trends.")
 
 
 @router.get("/model", response_model=ModelComparisonResponse)

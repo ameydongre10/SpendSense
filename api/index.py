@@ -35,6 +35,8 @@ app = FastAPI(
     title="SpendSense: Transaction Analytics & Fraud Intelligence API",
     description="Payments network analytics and fraud risk platform (Vercel Serverless).",
     version="1.0.0",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json",
     redirect_slashes=False,
 )
 
@@ -45,6 +47,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/docs", include_in_schema=False)
+def docs_redirect():
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/api/docs")
 
 # Use APIRouter so routes can be mounted both at root and under /api
 router = APIRouter()

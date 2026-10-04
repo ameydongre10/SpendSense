@@ -15,7 +15,7 @@ from fastapi.staticfiles import StaticFiles
 
 from api.models import HealthResponse
 from api.routes import analytics, fraud
-from src.database import check_connection, get_table_count, is_sqlite
+from src.database import check_connection, get_table_count, is_sqlite, init_db
 from src.config import Config
 
 logging.basicConfig(
@@ -31,6 +31,8 @@ app = FastAPI(
         "built to global card payment network analyst standards."
     ),
     version="1.0.0",
+    docs_url="/api/docs",
+    openapi_url="/api/openapi.json",
     redirect_slashes=False,
 )
 
@@ -43,9 +45,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Auto-initialize database schema if SQLite fallback is used
+try:
+    init_db()
+except Exception as e:
+    logger.warning("Database auto-initialization skipped or deferred: %s", e)
+
 # Include API Routers
 app.include_router(analytics.router, prefix="/api")
 app.include_router(fraud.router, prefix="/api")
+
+
+@app.get("/docs", include_in_schema=False)
+def docs_redirect():
+    """Redirect /docs to /api/docs Swagger documentation."""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/api/docs")
 
 
 @app.get("/api/health", response_model=HealthResponse, tags=["Health"])

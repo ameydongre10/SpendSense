@@ -1,8 +1,6 @@
-# SpendSense — Web & API Runtime Dependencies (Vercel Serverless Ready)
-# Keeps the serverless function bundle under 20 MB (Vercel limit: 250 MB)
+# SpendSense — Web & API Runtime Dependencies
 fastapi>=0.100,<1
 pydantic>=2.0,<3
 uvicorn>=0.23,<1
-
-# NOTE: For local ML pipeline execution and model retraining (Pandas, XGBoost, Scikit-learn),
-# install full requirements using: pip install -r requirements-ml.txt
+python-dotenv>=1.0,<2
+sqlalchemy>=2.0,<3
