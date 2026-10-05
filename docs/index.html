@@ -160,44 +160,65 @@
       </div>
     </section>
 
-    <!-- THE DAY / ANALYTICAL PILLARS (DARK SECTION WITH DYNAMIC FILTERING) -->
+    <!-- THE DAY / ANALYTICAL PILLARS (DARK SECTION WITH DYNAMIC FILTERING & DUAL-TRACK SYNC) -->
     <section class="day" id="pillars">
       <div class="wrap">
-        <p class="eyebrow">Portfolio Risk & Commercial Architecture</p>
-        <h2>Six Analytical Pillars.<br>One Unified Payments Network.</h2>
+        <div class="pillars-header">
+          <div>
+            <p class="eyebrow">Portfolio Risk & Commercial Architecture</p>
+            <h2>Six Analytical Pillars.<br>One Unified Payments Network.</h2>
+          </div>
+          <!-- Dynamic Quick Pillar Tab Bar -->
+          <div class="pillar-quick-switcher" id="pillar-quick-switcher" role="tablist" aria-label="Analytical Pillars">
+            <button class="pillar-tab-btn active" data-pillar-idx="0" role="tab" aria-selected="true">01 Loss Trend</button>
+            <button class="pillar-tab-btn" data-pillar-idx="1" role="tab" aria-selected="false">02 Category Mix</button>
+            <button class="pillar-tab-btn" data-pillar-idx="2" role="tab" aria-selected="false">03 RFM Segments</button>
+            <button class="pillar-tab-btn" data-pillar-idx="3" role="tab" aria-selected="false">04 Cohort Decay</button>
+            <button class="pillar-tab-btn" data-pillar-idx="4" role="tab" aria-selected="false">05 Profitability</button>
+            <button class="pillar-tab-btn" data-pillar-idx="5" role="tab" aria-selected="false">06 Anomalies</button>
+          </div>
+        </div>
+
         <div class="day-grid">
-          <!-- Interactive Clickable Pillars List -->
+          <!-- Interactive Clickable Pillars List (Sticky on desktop) -->
           <ol class="agenda" id="pillar-nav">
-            <li class="active" data-target-figure="fig-box-trends">
+            <li class="active" data-target-figure="fig-box-trends" data-pillar-idx="0">
               <time>01</time>
               <div>
                 <b>Fraud Rate Trend & Monthly Loss Trajectory</b>
                 <p>Tracking time-series fraud incidence, loss volatility, and monthly exposure across the portfolio.</p>
               </div>
             </li>
-            <li data-target-figure="fig-box-spend">
+            <li data-target-figure="fig-box-spend" data-pillar-idx="1">
               <time>02</time>
               <div>
                 <b>Merchant Category Mix & Spend Dispersion</b>
                 <p>Analyzing ticket volume and fraud risk concentration across Travel, Restaurants, and Retail.</p>
               </div>
             </li>
-            <li data-target-figure="fig-box-segments">
+            <li data-target-figure="fig-box-segments" data-pillar-idx="2">
               <time>03</time>
               <div>
                 <b>RFM Customer Segmentation (Quintile Scoring)</b>
                 <p>Classifying cardholders into Champions, Loyal Spenders, and At-Risk accounts based on behavioral recency and spend.</p>
               </div>
             </li>
-            <li data-target-figure="fig-box-cohort">
+            <li data-target-figure="fig-box-cohort" data-pillar-idx="3">
               <time>04</time>
               <div>
                 <b>Cohort Retention & Lifecycle Decay</b>
                 <p>Measuring retention velocity and active cardholder spend decay across 18 acquisition cohorts.</p>
               </div>
             </li>
-            <li data-target-figure="fig-box-anomalies">
+            <li data-target-figure="fig-box-profitability" data-pillar-idx="4">
               <time>05</time>
+              <div>
+                <b>Customer Segment Profitability & Unit Economics</b>
+                <p>Estimating net commercial contribution based on 2.50% network take-rate minus observed fraud write-offs.</p>
+              </div>
+            </li>
+            <li data-target-figure="fig-box-anomalies" data-pillar-idx="5">
+              <time>06</time>
               <div>
                 <b>Explainable Billing Anomaly Detection</b>
                 <p>Automated Z-score and IQR statistical outlier detection pinpointing suspicious charges with human-readable rationale.</p>
@@ -208,56 +229,128 @@
           <!-- Interactive Dynamic Figures Stack -->
           <div id="figures-stack">
             <!-- Figure 1: Monthly Fraud Trend -->
-            <figure class="editorial-figure active-figure" id="fig-box-trends">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <figure class="editorial-figure active-figure" id="fig-box-trends" data-pillar-idx="0">
+              <div class="figure-header">
                 <div class="eyebrow" style="margin-bottom:0;">Pillar 01 · Loss Trajectory</div>
                 <span class="figure-tag">Time Series</span>
               </div>
+              <div class="pillar-controls">
+                <div class="btn-group" id="trends-view-toggle">
+                  <button class="ctrl-btn active" data-mode="all">Dual-Axis</button>
+                  <button class="ctrl-btn" data-mode="rate">Fraud Rate (%)</button>
+                  <button class="ctrl-btn" data-mode="amount">Loss ($)</button>
+                </div>
+                <div id="trends-hover-readout" class="readout-pill">Hover chart to inspect</div>
+              </div>
               <div id="fig-trends-chart" class="viz-container"></div>
+              <div class="kpi-mini-grid">
+                <div class="kpi-mini"><span>Peak Month</span><strong>Dec · $5,240</strong></div>
+                <div class="kpi-mini"><span>Avg Loss Rate</span><strong>0.173%</strong></div>
+                <div class="kpi-mini"><span>Volatility</span><strong>Moderate (±0.04%)</strong></div>
+              </div>
               <figcaption><b>Fig. 01</b> · Monthly fraud rate (%) and net fraud chargeback volume ($) over time.</figcaption>
             </figure>
 
             <!-- Figure 2: Category Spend Mix -->
-            <figure class="editorial-figure" id="fig-box-spend">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <figure class="editorial-figure" id="fig-box-spend" data-pillar-idx="1">
+              <div class="figure-header">
                 <div class="eyebrow" style="margin-bottom:0;">Pillar 02 · Category Concentration</div>
                 <span class="figure-tag">Portfolio Mix</span>
               </div>
-              <div id="fig-spend-chart" style="padding:1rem 0;"></div>
-              <figcaption><b>Fig. 02</b> · Portfolio spend concentration and fraud rate across merchant categories.</figcaption>
+              <div class="pillar-controls">
+                <span class="ctrl-label">Sort:</span>
+                <div class="btn-group" id="spend-sort-toggle">
+                  <button class="ctrl-btn active" data-sort="spend">Spend ($)</button>
+                  <button class="ctrl-btn" data-sort="rate">Fraud Rate (%)</button>
+                  <button class="ctrl-btn" data-sort="alpha">A-Z</button>
+                </div>
+              </div>
+              <div id="fig-spend-chart" style="padding:0.75rem 0;"></div>
+              <div id="spend-detail-drawer" class="pillar-detail-box" style="display:none;"></div>
+              <figcaption><b>Fig. 02</b> · Portfolio spend concentration and fraud rate across merchant categories. Click a category to inspect.</figcaption>
             </figure>
 
             <!-- Figure 3: RFM Segments Summary -->
-            <figure class="editorial-figure" id="fig-box-segments">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <figure class="editorial-figure" id="fig-box-segments" data-pillar-idx="2">
+              <div class="figure-header">
                 <div class="eyebrow" style="margin-bottom:0;">Pillar 03 · Customer Value Tiers</div>
                 <span class="figure-tag">RFM Model</span>
               </div>
+              <div class="pillar-controls">
+                <span class="ctrl-label">Filter Tiers:</span>
+                <div class="btn-group" id="segments-filter-toggle">
+                  <button class="ctrl-btn active" data-filter="all">All Tiers (6)</button>
+                  <button class="ctrl-btn" data-filter="core">Core Value</button>
+                  <button class="ctrl-btn" data-filter="atrisk">At-Risk Focus</button>
+                </div>
+              </div>
               <div id="fig-segments-table" class="viz-container"></div>
-              <figcaption><b>Fig. 03</b> · Customer RFM segment distribution, profit index, and revenue share.</figcaption>
+              <div id="segment-detail-drawer" class="pillar-detail-box" style="display:none;"></div>
+              <figcaption><b>Fig. 03</b> · Customer RFM segment distribution, spend behavior, and value classifications. Click any row to inspect.</figcaption>
             </figure>
 
             <!-- Figure 4: Cohort Retention -->
-            <figure class="editorial-figure" id="fig-box-cohort">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <figure class="editorial-figure" id="fig-box-cohort" data-pillar-idx="3">
+              <div class="figure-header">
                 <div class="eyebrow" style="margin-bottom:0;">Pillar 04 · Lifecycle Velocity</div>
                 <span class="figure-tag">Cohort Decay</span>
+              </div>
+              <div class="pillar-controls">
+                <div class="btn-group" id="cohort-view-toggle">
+                  <button class="ctrl-btn active" data-view="matrix">Heatmap Matrix</button>
+                  <button class="ctrl-btn" data-view="curve">Decay Curve</button>
+                </div>
+                <div class="stat-badge">Day 90 Inflection: ~48%</div>
               </div>
               <div id="fig-cohort-chart" class="viz-container"></div>
               <figcaption><b>Fig. 04</b> · Cohort retention matrix tracking active customer percentage by month.</figcaption>
             </figure>
 
-            <!-- Figure 5: Billing Anomalies Sample with Interactive Filter -->
-            <figure class="editorial-figure" id="fig-box-anomalies">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                <div class="eyebrow" style="margin-bottom:0;">Pillar 05 · Statistical Outliers</div>
+            <!-- Figure 5: Customer Segment Profitability & Unit Economics -->
+            <figure class="editorial-figure" id="fig-box-profitability" data-pillar-idx="4">
+              <div class="figure-header">
+                <div class="eyebrow" style="margin-bottom:0;">Pillar 05 · Commercial Economics</div>
+                <span class="figure-tag">Unit Economics</span>
+              </div>
+              <!-- Interactive Take-Rate Simulator -->
+              <div class="simulator-box" style="margin-bottom:1rem; padding:1rem; background:#121217; border:1px solid #2a2a35;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+                  <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:#aaa;">Network Take Rate Simulator:</span>
+                  <span id="take-rate-val-badge" class="slider-badge" style="color:var(--acid); font-weight:700;">Take Rate: 2.50%</span>
+                </div>
+                <input type="range" id="take-rate-slider" class="editorial-range" min="1.0" max="4.0" step="0.1" value="2.5">
+                <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:#666; margin-top:0.35rem;">
+                  <span>1.0% (Discounted)</span>
+                  <span>2.5% (Benchmark Interchange)</span>
+                  <span>4.0% (Premium Rewards)</span>
+                </div>
+              </div>
+              <div id="fig-profitability-chart" class="viz-container"></div>
+              <figcaption><b>Fig. 05</b> · Dynamic net contribution margin (Gross Take Rate minus observed fraud write-offs) across cardholder tiers.</figcaption>
+            </figure>
+
+            <!-- Figure 6: Billing Anomalies Sample with Interactive Filter -->
+            <figure class="editorial-figure" id="fig-box-anomalies" data-pillar-idx="5">
+              <div class="figure-header">
+                <div class="eyebrow" style="margin-bottom:0;">Pillar 06 · Statistical Outliers</div>
                 <span class="figure-tag">Anomaly Screen</span>
               </div>
-              <div style="margin-block:0.5rem 1rem;">
+              <div style="margin-block:0.5rem 0.75rem;">
                 <input type="text" id="anomaly-search" placeholder="Filter by amount, reason, or transaction ID..." class="anom-search-input">
               </div>
+              <div class="pillar-controls" style="margin-bottom:0.75rem;">
+                <div class="btn-group" id="anomaly-filter-chips">
+                  <button class="ctrl-btn active" data-chip="all">All</button>
+                  <button class="ctrl-btn" data-chip="extreme">>4.0σ Extreme</button>
+                  <button class="ctrl-btn" data-chip="highval">>$1,500 Ticket</button>
+                </div>
+                <span id="anomaly-count-badge" class="readout-pill">Showing 5 anomalies</span>
+              </div>
               <div id="fig-anomalies-table" class="viz-container"></div>
-              <figcaption><b>Fig. 05</b> · Sample of explainable statistical billing anomalies flagged for automated review.</figcaption>
+              <div style="display:flex; justify-content:center; margin-top:0.75rem;">
+                <button id="anomalies-show-more-btn" class="ctrl-btn" style="width:100%; max-width:240px; padding:0.5rem;">Load More Anomalies</button>
+              </div>
+              <figcaption><b>Fig. 06</b> · Sample of explainable statistical billing anomalies flagged for automated review. Click any row to inspect.</figcaption>
             </figure>
           </div>
         </div>
