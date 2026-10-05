@@ -24,12 +24,13 @@ SpendSense bridges the gap between **technical analytics rigor** (PostgreSQL, Py
 9. [Cohort Lifecycle Analysis](#cohort-lifecycle-analysis)
 10. [Customer Segment Profitability](#customer-segment-profitability)
 11. [Explainable Billing Anomalies](#explainable-billing-anomalies)
-12. [Interactive Editorial Dashboard](#interactive-editorial-dashboard)
-13. [Three Quantified Business Recommendations](#three-quantified-business-recommendations)
-14. [PowerPoint Recommendation Deliverable](#powerpoint-recommendation-deliverable)
-15. [Setup & Execution Instructions](#setup--execution-instructions)
-16. [Test Suite Validation](#test-suite-validation)
-17. [Limitations & Future Enhancements](#limitations--future-enhancements)
+12. [Six Analytical Pillars (Dynamic Architecture)](#six-analytical-pillars-dynamic-architecture)
+13. [Interactive Editorial Dashboard](#interactive-editorial-dashboard)
+14. [Three Quantified Business Recommendations](#three-quantified-business-recommendations)
+15. [PowerPoint Recommendation Deliverable](#powerpoint-recommendation-deliverable)
+16. [Setup & Execution Instructions](#setup--execution-instructions)
+17. [Test Suite Validation](#test-suite-validation)
+18. [Limitations & Future Enhancements](#limitations--future-enhancements)
 
 ---
 
@@ -212,13 +213,35 @@ Over 2,000 transactions were identified with human-readable rationale (e.g. *"Am
 
 ---
 
+## Six Analytical Pillars (Dynamic Architecture)
+
+The centerpiece of SpendSense's commercial and risk portfolio analytics is the **Six Analytical Pillars** engine (`#pillars`). Each pillar is engineered with deep dynamic controls, real-time recalculations, and bi-directional viewport synchronization:
+
+| Pillar | Analytical Objective | Visual Artifact | Dynamic Interactivity |
+|:---:|:---|:---|:---|
+| **01** | **Fraud Rate Trend & Monthly Loss Trajectory** | `fig-box-trends` | **Dual-Axis Metric Toggles:** Switch between *Dual-Axis*, *Fraud Rate (%)*, and *Loss ($)*. Interactive SVG hitboxes trigger live hover readouts displaying exact month, loss volume, and rate, accompanied by KPI chips (Peak Month, Average Loss Rate, Volatility). |
+| **02** | **Merchant Category Mix & Spend Dispersion** | `fig-box-spend` | **Interactive Sorter & Inspector:** Sort top merchant categories by *Spend ($)*, *Fraud Rate (%)*, or *A-Z*. Clicking any category bar opens an in-depth profile drawer revealing transaction volume, ticket averages, and risk directives. |
+| **03** | **RFM Customer Segmentation (Quintile Scoring)** | `fig-box-segments` | **Tier Filters & Action Cards:** Filter cardholders across *All Tiers*, *Core Value (Champions & Loyal)*, and *At-Risk Focus*. Clicking any row expands the commercial action plan (e.g. VIP Concierge alert on 21-day inactivity). |
+| **04** | **Cohort Retention & Lifecycle Decay** | `fig-box-cohort` | **Heatmap vs. Decay Curve Toggle:** View the full 2D retention matrix with hover tooltips, or toggle to the SVG *Average Decay Curve* showing M+0 through M+6 progression against the 50% adoption benchmark threshold. |
+| **05** | **Customer Segment Profitability & Unit Economics** | `fig-box-profitability` | **Live Network Take-Rate Simulator:** Interactive slider (1.0% to 4.0%, step 0.1%, default 2.50%) that dynamically recalculates Gross Interchange Revenue, Fraud Loss write-offs, Net Contribution Margin, and relative Profit Index across cardholder tiers in real time. |
+| **06** | **Explainable Billing Anomaly Detection** | `fig-box-anomalies` | **Search, Severity Chips & Pagination:** Live instant search (by amount, keyword, or transaction ID), severity filter chips (*All*, *>4.0σ Extreme*, *>$1,500 Ticket*), match counter, clickable row diagnostics, and *Load More* expansion. |
+
+### Bi-Directional Synchronized Navigation
+- **Sticky Desktop Agenda:** `#pillar-nav` is pinned on desktop viewports (`position: sticky; top: 5.5rem;`), maintaining navigation context as users scroll through the figures stack.
+- **Scroll-Spy Synchronization (`IntersectionObserver`):** Scrolling through the figures dynamically highlights the corresponding pillar in `#pillar-nav`, expands its editorial description, and updates the quick switcher.
+- **Quick Pillar Switcher Ribbon:** A `.pillar-quick-switcher` tab bar at the section header enables 1-click jumps across all 6 pillars on mobile and desktop.
+- **Scroll Margins & Focus Pulse:** Figures include `scroll-margin-top: 5.5rem` and an acid pulse glow animation on activation.
+
+---
+
 ## Interactive Editorial Dashboard
 
 The frontend faithfully replicates the visual language of the supplied `index.html`:
 - **Typography:** Archivo font with clamp-based fluid typography.
 - **Color System:** `--ink: #111116`, `--paper: #f7f4ec`, `--acid: #d5ff00`, `--muted: #a7a6a4`.
-- **Layout & Structure:** Asymmetric offset grids, `.ghost` watermark headings, `.portrait` cards with acid drop shadows, and dark `.day` section with hover-expanding agenda rows.
-- **Real-Time Visuals:** Native SVG Precision-Recall curves, dual-axis fraud trends, and interactive cohort heatmaps powered by live FastAPI endpoints.
+- **Layout & Structure:** Asymmetric offset grids, `.ghost` watermark headings, `.portrait` cards with acid drop shadows, sticky sidebar agendas, and dark `.day` section.
+- **Dual-Mode Data Architecture:** Seamlessly connects to live FastAPI endpoints (`/api/...`) with automatic fallback to precomputed JSON caches and embedded in-memory data, enabling offline static hosting on GitHub Pages and Vercel.
+- **Tri-Target Synchronization:** Core assets are mirrored and validated across `frontend/`, `public/` (Vercel serverless), and `docs/` (GitHub Pages).
 
 ---
 
