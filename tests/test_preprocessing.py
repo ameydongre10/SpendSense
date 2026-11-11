@@ -38,6 +38,8 @@ def test_stratified_train_test_split():
     X_train, X_test, y_train, y_test = get_stratified_train_test_split(
         X, y, test_size=0.2, random_state=42
     )
+    assert len(X_train) == 800
+    assert len(X_test) == 200
     assert len(y_train) == 800
     assert len(y_test) == 200
     assert y_train.sum() == 16

@@ -50,8 +50,8 @@ def _get_cache() -> dict:
         try:
             with open(CACHE_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
-        except Exception:
-            pass
+        except (json.JSONDecodeError, OSError) as e:
+            logger.debug("Failed reading cache file: %s", e)
     return {}
 
 
@@ -68,8 +68,8 @@ async def get_overview():
                     "SELECT metric_name, metric_value FROM business_metrics"
                 )
                 m_map = {m["metric_name"]: float(m["metric_value"]) for m in b_metrics}
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug("Business metrics query deferred: %s", e)
 
             return OverviewResponse(
                 total_transactions=stats["total_transactions"],

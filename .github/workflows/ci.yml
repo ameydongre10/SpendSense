@@ -37,7 +37,7 @@ jobs:
 
       - name: Lint with Ruff
         run: |
-          ruff check . --ignore E501
+          ruff check .
 
       - name: Validate Frontend Synchronization (Zero Drift)
         run: |
@@ -45,8 +45,10 @@ jobs:
           git diff --exit-code docs/ public/ || (echo "Frontend drift detected! Run scripts/sync_frontend.py." && exit 1)
 
       - name: Execute Pytest Suite with Coverage
+        env:
+          USE_SQLITE: "1"
         run: |
-          pytest --cov=src --cov=api --cov-report=term-missing tests/
+          python -m pytest --cov=src --cov=api --cov-report=term-missing tests/
 
   docker-build:
     name: Docker Multi-Stage Build Verification

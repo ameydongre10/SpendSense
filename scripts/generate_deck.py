@@ -247,21 +247,27 @@ def create_deck(output_path: Path):
     recs_data = [
         (
             "Recommendation 1: Real-Time XGBoost Scoring",
-            "Finding: Linear baselines create unacceptable false-positive cardholder friction.\n"
-            "Action: Deploy XGBoost in authorization stream with dynamic step-up authentication at 0.50 threshold.\n"
-            "Quantified Impact: Intercepts ~$42,500 in fraud loss with a 64% reduction in false-positive declines.",
+            (
+                "Finding: Linear baselines create unacceptable false-positive cardholder friction.\n"
+                "Action: Deploy XGBoost in authorization stream with dynamic step-up authentication at 0.50 threshold.\n"
+                "Quantified Impact: Intercepts ~$42,500 in fraud loss with a 64% reduction in false-positive declines."
+            ),
         ),
         (
             "Recommendation 2: VIP Retention & Spend Acceleration",
-            "Finding: Champions and Loyal Spenders represent 92.1% of portfolio interchange revenue.\n"
-            "Action: Introduce targeted spend rewards on top categories (Travel & Dining) and trigger concierge alerts on 21+ day recency gaps.\n"
-            "Quantified Impact: Mitigates an estimated 4.2% annualized churn risk on highest-margin customer tiers.",
+            (
+                "Finding: Champions and Loyal Spenders represent 92.1% of portfolio interchange revenue.\n"
+                "Action: Introduce targeted spend rewards on top categories (Travel & Dining) and trigger concierge alerts on 21+ day recency gaps.\n"
+                "Quantified Impact: Mitigates an estimated 4.2% annualized churn risk on highest-margin customer tiers."
+            ),
         ),
         (
             "Recommendation 3: Statistical Billing Anomaly Alerting",
-            "Finding: Over 2,000 transactions violate 3.5-sigma category limits or 4x IQR ticket thresholds.\n"
-            "Action: Implement automated velocity screening rules triggering instant cardholder push/SMS validation.\n"
-            "Quantified Impact: Reduces dispute chargeback overhead by 22% and prevents recurring unauthorized billing.",
+            (
+                "Finding: Over 2,000 transactions violate 3.5-sigma category limits or 4x IQR ticket thresholds.\n"
+                "Action: Implement automated velocity screening rules triggering instant cardholder push/SMS validation.\n"
+                "Quantified Impact: Reduces dispute chargeback overhead by 22% and prevents recurring unauthorized billing."
+            ),
         ),
     ]
     for i, (head, body) in enumerate(recs_data):

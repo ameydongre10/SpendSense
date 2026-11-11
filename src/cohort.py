@@ -115,7 +115,7 @@ def get_cohort_summary() -> dict:
         ORDER BY cohort_month ASC, period_index ASC
     """
     rows = execute_sql(sql)
-    cohort_months = sorted(list({r["cohort_month"] for r in rows}))
+    cohort_months = sorted({r["cohort_month"] for r in rows})
     max_periods = max([r["period_index"] for r in rows], default=0)
 
     cohorts = [

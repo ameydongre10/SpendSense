@@ -45,7 +45,6 @@ def compute_and_save_business_metrics(model_recall: float = 0.85) -> dict:
     total_txns = int(fraud_res["total_txns"] or 0)
     fraud_count = int(fraud_res["fraud_count"] or 0)
     total_fraud_amt = float(fraud_res["total_fraud_amount"] or 0.0)
-    total_port_amt = float(fraud_res["total_portfolio_amount"] or 0.0)
 
     # Best model recall from model_results if available
     sql_best_model = """

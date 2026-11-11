@@ -1,0 +1,19 @@
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+exclude = [
+    ".git",
+    ".pytest_cache",
+    ".ruff_cache",
+    "data",
+    "docs",
+    "public",
+    "frontend",
+]
+
+[tool.ruff.lint]
+select = ["E", "F", "W"]
+ignore = [
+    "E501",  # line length
+    "B008",  # FastAPI Depends
+]

@@ -55,6 +55,10 @@ node_modules/
 # PostgreSQL data volume
 pgdata/
 
-# Logs
+# Logs & Test artifacts
 *.log
 logs/
+.coverage
+htmlcov/
+.pytest_cache/
+.ruff_cache/

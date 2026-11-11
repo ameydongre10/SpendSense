@@ -50,8 +50,8 @@ async def get_fraud_trends():
                 return FraudTrendsResponse(
                     trends=[FraudTrendPoint(**t) for t in cached_trends]
                 )
-        except Exception:
-            pass
+        except (json.JSONDecodeError, OSError) as e:
+            logger.debug("Failed reading fraud trends cache: %s", e)
 
     raise HTTPException(status_code=500, detail="Unable to retrieve fraud trends.")
 

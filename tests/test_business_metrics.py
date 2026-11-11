@@ -13,6 +13,7 @@ def test_business_metrics_calculation():
 
     # Revenue at risk avoided should equal fraud_amount * recall
     expected_avoided = round(metrics["total_fraud_amount"] * 0.90, 2)
+    assert expected_avoided >= 0
     # If best model in db had a different recall, it uses the active recall, so check that it is > 0
     assert metrics["revenue_at_risk_avoided"] > 0
     assert metrics["fraud_rate"] > 0

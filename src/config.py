@@ -6,6 +6,7 @@ Every module reads from this single source.
 
 import os
 from pathlib import Path
+from typing import ClassVar
 
 from dotenv import load_dotenv
 
@@ -65,7 +66,7 @@ class Config:
 
     # ── Dataset Constants ────────────────────
     # Kaggle Credit Card Fraud Detection dataset
-    EXPECTED_COLUMNS: list[str] = [
+    EXPECTED_COLUMNS: ClassVar[list[str]] = [
         "Time",
         "V1",
         "V2",
@@ -102,7 +103,7 @@ class Config:
     EXPECTED_FRAUD_RATE_APPROX: float = 0.0017  # ~0.17%
 
     # ── Synthetic Enrichment ─────────────────
-    MERCHANT_CATEGORIES: list[str] = [
+    MERCHANT_CATEGORIES: ClassVar[list[str]] = [
         "Grocery",
         "Gas Station",
         "Restaurant",

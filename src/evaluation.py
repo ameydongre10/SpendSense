@@ -52,7 +52,7 @@ def evaluate_classifier_performance(
     roc_auc = float(roc_auc_score(y_true, y_pred_proba))
 
     # Precision-Recall Curve points for dashboard visualization (downsampled to 50 points)
-    precisions, recalls, thresholds = precision_recall_curve(y_true, y_pred_proba)
+    precisions, recalls, _thresholds = precision_recall_curve(y_true, y_pred_proba)
     step = max(1, len(recalls) // 50)
     pr_curve_sampled = [
         {
