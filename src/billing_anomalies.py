@@ -138,21 +138,25 @@ def save_billing_anomalies_to_db(df_anom: pd.DataFrame) -> None:
 
 def get_anomalies_summary() -> dict:
     """Retrieve billing anomalies for API/Dashboard."""
-    sql = """
-        SELECT
-            anomaly_id,
-            transaction_id,
-            customer_id,
-            amount,
-            anomaly_score,
-            is_anomaly,
-            detection_method,
-            reason
-        FROM billing_anomalies
-        ORDER BY anomaly_score DESC
-        LIMIT 100
-    """
-    rows = execute_sql(sql)
+    try:
+        sql = """
+            SELECT
+                anomaly_id,
+                transaction_id,
+                customer_id,
+                amount,
+                anomaly_score,
+                is_anomaly,
+                detection_method,
+                reason
+            FROM billing_anomalies
+            ORDER BY anomaly_score DESC
+            LIMIT 100
+        """
+        rows = execute_sql(sql)
+    except Exception as e:
+        logger.warning("Querying billing_anomalies deferred or table uninitialized: %s", e)
+        rows = []
     anomalies = [
         {
             "anomaly_id": int(r["anomaly_id"]),

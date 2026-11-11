@@ -133,20 +133,24 @@ def save_segment_profitability_to_db(df_prof: pd.DataFrame) -> None:
 
 def get_profitability_summary() -> list[dict]:
     """Retrieve segment profitability results for API/Dashboard."""
-    sql = """
-        SELECT
-            segment_label,
-            customer_count,
-            total_spend,
-            avg_spend,
-            avg_frequency,
-            fraud_rate,
-            profit_index,
-            revenue_share
-        FROM segment_profitability
-        ORDER BY profit_index DESC
-    """
-    rows = execute_sql(sql)
+    try:
+        sql = """
+            SELECT
+                segment_label,
+                customer_count,
+                total_spend,
+                avg_spend,
+                avg_frequency,
+                fraud_rate,
+                profit_index,
+                revenue_share
+            FROM segment_profitability
+            ORDER BY profit_index DESC
+        """
+        rows = execute_sql(sql)
+    except Exception as e:
+        logger.warning("Querying segment_profitability deferred or table uninitialized: %s", e)
+        rows = []
     return [
         {
             "segment_label": r["segment_label"],
