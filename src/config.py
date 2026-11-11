@@ -6,6 +6,7 @@ Every module reads from this single source.
 
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Load .env from project root
@@ -38,10 +39,18 @@ class Config:
 
     # ── Paths ────────────────────────────────
     PROJECT_ROOT: Path = _PROJECT_ROOT
-    RAW_DATA_PATH: Path = _PROJECT_ROOT / os.getenv("RAW_DATA_PATH", "data/raw/creditcard.csv")
-    PROCESSED_DATA_PATH: Path = _PROJECT_ROOT / os.getenv("PROCESSED_DATA_PATH", "data/processed")
-    MODEL_ARTIFACTS_PATH: Path = _PROJECT_ROOT / os.getenv("MODEL_ARTIFACTS_PATH", "ml/artifacts")
-    ANALYTICS_CACHE_PATH: Path = _PROJECT_ROOT / os.getenv("ANALYTICS_CACHE_PATH", "analytics/cache")
+    RAW_DATA_PATH: Path = _PROJECT_ROOT / os.getenv(
+        "RAW_DATA_PATH", "data/raw/creditcard.csv"
+    )
+    PROCESSED_DATA_PATH: Path = _PROJECT_ROOT / os.getenv(
+        "PROCESSED_DATA_PATH", "data/processed"
+    )
+    MODEL_ARTIFACTS_PATH: Path = _PROJECT_ROOT / os.getenv(
+        "MODEL_ARTIFACTS_PATH", "ml/artifacts"
+    )
+    ANALYTICS_CACHE_PATH: Path = _PROJECT_ROOT / os.getenv(
+        "ANALYTICS_CACHE_PATH", "analytics/cache"
+    )
 
     @classmethod
     def ensure_directories(cls) -> None:
@@ -57,19 +66,53 @@ class Config:
     # ── Dataset Constants ────────────────────
     # Kaggle Credit Card Fraud Detection dataset
     EXPECTED_COLUMNS: list[str] = [
-        "Time", "V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", "V9",
-        "V10", "V11", "V12", "V13", "V14", "V15", "V16", "V17", "V18",
-        "V19", "V20", "V21", "V22", "V23", "V24", "V25", "V26", "V27",
-        "V28", "Amount", "Class",
+        "Time",
+        "V1",
+        "V2",
+        "V3",
+        "V4",
+        "V5",
+        "V6",
+        "V7",
+        "V8",
+        "V9",
+        "V10",
+        "V11",
+        "V12",
+        "V13",
+        "V14",
+        "V15",
+        "V16",
+        "V17",
+        "V18",
+        "V19",
+        "V20",
+        "V21",
+        "V22",
+        "V23",
+        "V24",
+        "V25",
+        "V26",
+        "V27",
+        "V28",
+        "Amount",
+        "Class",
     ]
     EXPECTED_ROW_COUNT_MIN: int = 280_000
     EXPECTED_FRAUD_RATE_APPROX: float = 0.0017  # ~0.17%
 
     # ── Synthetic Enrichment ─────────────────
     MERCHANT_CATEGORIES: list[str] = [
-        "Grocery", "Gas Station", "Restaurant", "Online Retail",
-        "Travel", "Entertainment", "Healthcare", "Utilities",
-        "Department Store", "Electronics",
+        "Grocery",
+        "Gas Station",
+        "Restaurant",
+        "Online Retail",
+        "Travel",
+        "Entertainment",
+        "Healthcare",
+        "Utilities",
+        "Department Store",
+        "Electronics",
     ]
     REFERENCE_START_DATE: str = "2023-01-01"  # Synthetic date anchor
     NUM_SYNTHETIC_CUSTOMERS: int = 5000

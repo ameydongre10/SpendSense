@@ -8,13 +8,12 @@ ensuring the application, tests, and API work seamlessly in any environment.
 
 import logging
 import os
+from collections.abc import Generator
 from contextlib import contextmanager
-from pathlib import Path
-from typing import Generator
 
-from sqlalchemy import create_engine, text
-from sqlalchemy.engine import Engine, Connection
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy import create_engine, event, text
+from sqlalchemy.engine import Connection, Engine
+from sqlalchemy.orm import Session, sessionmaker
 
 from src.config import Config
 
@@ -24,6 +23,15 @@ _engine: Engine | None = None
 _is_sqlite: bool = False
 
 
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    """Enforce foreign key constraints when using SQLite."""
+    if _is_sqlite:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+
 def is_sqlite() -> bool:
     """Return whether the active engine is SQLite fallback."""
     return _is_sqlite
@@ -31,12 +39,22 @@ def is_sqlite() -> bool:
 
 def get_engine() -> Engine:
     """Return a singleton SQLAlchemy engine.
-    
+
     Attempts PostgreSQL connection first. If unreachable or not configured,
     falls back to SQLite at data/spendsense.db.
     """
     global _engine, _is_sqlite
     if _engine is not None:
+        return _engine
+
+    force_sqlite = os.getenv("USE_SQLITE", "").lower() in ("1", "true", "yes")
+    if force_sqlite or not Config.POSTGRES_PASSWORD:
+        db_path = Config.PROJECT_ROOT / "data" / "spendsense.db"
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        sqlite_url = f"sqlite:///{db_path.as_posix()}"
+        _engine = create_engine(sqlite_url, echo=False)
+        _is_sqlite = True
+        logger.info("Using SQLite database at %s", db_path)
         return _engine
 
     # Try PostgreSQL first
@@ -47,19 +65,25 @@ def get_engine() -> Engine:
             pool_size=5,
             max_overflow=10,
             pool_pre_ping=True,
-            connect_args={"connect_timeout": 3},
+            connect_args={"connect_timeout": 2},
             echo=False,
         )
         with test_engine.connect() as conn:
             conn.execute(text("SELECT 1"))
         _engine = test_engine
         _is_sqlite = False
-        logger.info("Connected to PostgreSQL at %s:%s", Config.POSTGRES_HOST, Config.POSTGRES_PORT)
+        logger.info(
+            "Connected to PostgreSQL at %s:%s",
+            Config.POSTGRES_HOST,
+            Config.POSTGRES_PORT,
+        )
         return _engine
     except Exception as e:
         logger.warning(
             "PostgreSQL at %s:%s is unreachable (%s). Initializing SQLite fallback at data/spendsense.db",
-            Config.POSTGRES_HOST, Config.POSTGRES_PORT, e
+            Config.POSTGRES_HOST,
+            Config.POSTGRES_PORT,
+            e,
         )
 
     # SQLite fallback
@@ -113,7 +137,8 @@ def init_db() -> None:
     with engine.begin() as conn:
         if _is_sqlite:
             # SQLite compatible DDL
-            conn.execute(text("""
+            conn.execute(
+                text("""
                 CREATE TABLE IF NOT EXISTS transactions (
                     transaction_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     time_elapsed REAL NOT NULL,
@@ -126,8 +151,10 @@ def init_db() -> None:
                     is_fraud INTEGER NOT NULL CHECK (is_fraud IN (0, 1)),
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
-            """))
-            conn.execute(text("""
+            """)
+            )
+            conn.execute(
+                text("""
                 CREATE TABLE IF NOT EXISTS customer_enrichment (
                     transaction_id INTEGER PRIMARY KEY,
                     customer_id TEXT NOT NULL,
@@ -138,8 +165,10 @@ def init_db() -> None:
                     is_synthetic INTEGER DEFAULT 1,
                     FOREIGN KEY (transaction_id) REFERENCES transactions(transaction_id)
                 );
-            """))
-            conn.execute(text("""
+            """)
+            )
+            conn.execute(
+                text("""
                 CREATE TABLE IF NOT EXISTS rfm_segments (
                     customer_id TEXT PRIMARY KEY,
                     recency_days INTEGER NOT NULL,
@@ -152,8 +181,10 @@ def init_db() -> None:
                     segment_label TEXT NOT NULL,
                     computed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
-            """))
-            conn.execute(text("""
+            """)
+            )
+            conn.execute(
+                text("""
                 CREATE TABLE IF NOT EXISTS cohort_analysis (
                     cohort_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     cohort_month TEXT NOT NULL,
@@ -166,8 +197,10 @@ def init_db() -> None:
                     computed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     UNIQUE (cohort_month, period_month)
                 );
-            """))
-            conn.execute(text("""
+            """)
+            )
+            conn.execute(
+                text("""
                 CREATE TABLE IF NOT EXISTS billing_anomalies (
                     anomaly_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     transaction_id INTEGER,
@@ -179,8 +212,10 @@ def init_db() -> None:
                     reason TEXT,
                     detected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
-            """))
-            conn.execute(text("""
+            """)
+            )
+            conn.execute(
+                text("""
                 CREATE TABLE IF NOT EXISTS model_results (
                     model_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     model_name TEXT NOT NULL,
@@ -200,8 +235,10 @@ def init_db() -> None:
                     trained_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     notes TEXT
                 );
-            """))
-            conn.execute(text("""
+            """)
+            )
+            conn.execute(
+                text("""
                 CREATE TABLE IF NOT EXISTS business_metrics (
                     metric_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     metric_name TEXT NOT NULL UNIQUE,
@@ -211,8 +248,10 @@ def init_db() -> None:
                     data_source TEXT,
                     computed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
-            """))
-            conn.execute(text("""
+            """)
+            )
+            conn.execute(
+                text("""
                 CREATE TABLE IF NOT EXISTS segment_profitability (
                     segment_label TEXT PRIMARY KEY,
                     customer_count INTEGER NOT NULL,
@@ -224,17 +263,36 @@ def init_db() -> None:
                     revenue_share REAL,
                     computed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
-            """))
+            """)
+            )
             # Indexes
-            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_txn_is_fraud ON transactions(is_fraud);"))
-            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_txn_amount ON transactions(amount);"))
-            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_enrich_customer ON customer_enrichment(customer_id);"))
-            conn.execute(text("CREATE INDEX IF NOT EXISTS idx_enrich_date ON customer_enrichment(transaction_date);"))
+            conn.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_txn_is_fraud ON transactions(is_fraud);"
+                )
+            )
+            conn.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_txn_amount ON transactions(amount);"
+                )
+            )
+            conn.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_enrich_customer ON customer_enrichment(customer_id);"
+                )
+            )
+            conn.execute(
+                text(
+                    "CREATE INDEX IF NOT EXISTS idx_enrich_date ON customer_enrichment(transaction_date);"
+                )
+            )
         else:
             # PostgreSQL DDL
             sql_file_1 = Config.PROJECT_ROOT / "database" / "schema" / "01_init.sql"
             sql_file_2 = Config.PROJECT_ROOT / "database" / "schema" / "02_tables.sql"
-            sql_file_3 = Config.PROJECT_ROOT / "database" / "schema" / "03_indexes_views.sql"
+            sql_file_3 = (
+                Config.PROJECT_ROOT / "database" / "schema" / "03_indexes_views.sql"
+            )
             for f in [sql_file_1, sql_file_2, sql_file_3]:
                 if f.exists():
                     conn.execute(text(f.read_text(encoding="utf-8")))

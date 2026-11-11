@@ -12,32 +12,32 @@ Exposes analytical endpoints backed by actual database and precomputed metrics:
 
 import json
 import logging
-from pathlib import Path
+
 from fastapi import APIRouter, HTTPException
 
 from api.models import (
-    OverviewResponse,
-    SpendAnalysisResponse,
-    SpendByCategory,
-    SegmentsResponse,
-    SegmentDetail,
-    CohortResponse,
-    CohortRow,
-    ProfitabilityResponse,
-    ProfitabilityDetail,
     AnomaliesResponse,
     AnomalyDetail,
-    RecommendationsResponse,
+    CohortResponse,
+    CohortRow,
+    OverviewResponse,
+    ProfitabilityDetail,
+    ProfitabilityResponse,
     Recommendation,
+    RecommendationsResponse,
+    SegmentDetail,
+    SegmentsResponse,
+    SpendAnalysisResponse,
+    SpendByCategory,
 )
-from src.config import Config
-from src.eda import get_overview_statistics, get_spend_by_merchant_category
-from src.rfm import get_segment_aggregates
-from src.cohort import get_cohort_summary
-from src.profitability import get_profitability_summary
 from src.billing_anomalies import get_anomalies_summary
-from src.recommendations import generate_business_recommendations
+from src.cohort import get_cohort_summary
+from src.config import Config
 from src.database import execute_sql
+from src.eda import get_overview_statistics, get_spend_by_merchant_category
+from src.profitability import get_profitability_summary
+from src.recommendations import generate_business_recommendations
+from src.rfm import get_segment_aggregates
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Analytics"])
@@ -56,7 +56,7 @@ def _get_cache() -> dict:
 
 
 @router.get("/overview", response_model=OverviewResponse)
-def get_overview():
+async def get_overview():
     """Retrieve top-level transaction and portfolio KPIs."""
     try:
         stats = get_overview_statistics()
@@ -64,7 +64,9 @@ def get_overview():
             # Query revenue-at-risk and entity counts from business_metrics
             m_map = {}
             try:
-                b_metrics = execute_sql("SELECT metric_name, metric_value FROM business_metrics")
+                b_metrics = execute_sql(
+                    "SELECT metric_name, metric_value FROM business_metrics"
+                )
                 m_map = {m["metric_name"]: float(m["metric_value"]) for m in b_metrics}
             except Exception:
                 pass
@@ -80,7 +82,10 @@ def get_overview():
                 avg_transaction_amount=stats["avg_transaction_amount"],
                 avg_fraud_amount=stats["avg_fraud_amount"],
                 avg_legitimate_amount=stats["avg_legitimate_amount"],
-                revenue_at_risk=m_map.get("revenue_at_risk_avoided", round(stats["total_fraud_amount"] * 0.85, 2)),
+                revenue_at_risk=m_map.get(
+                    "revenue_at_risk_avoided",
+                    round(stats["total_fraud_amount"] * 0.85, 2),
+                ),
                 unique_customers=int(m_map.get("unique_customers", 5000)),
                 segment_count=int(m_map.get("segment_count", 6)),
                 anomaly_count=int(m_map.get("billing_anomalies_count", 0)),
@@ -112,12 +117,14 @@ def get_overview():
 
 
 @router.get("/spend", response_model=SpendAnalysisResponse)
-def get_spend_analysis():
+async def get_spend_analysis():
     """Retrieve spend volume and fraud distribution across merchant categories."""
     try:
         cats = get_spend_by_merchant_category()
         if cats:
-            return SpendAnalysisResponse(categories=[SpendByCategory(**c) for c in cats])
+            return SpendAnalysisResponse(
+                categories=[SpendByCategory(**c) for c in cats]
+            )
     except Exception as e:
         logger.warning("Error querying spend from DB: %s, falling back to cache.", e)
 
@@ -130,7 +137,7 @@ def get_spend_analysis():
 
 
 @router.get("/segments", response_model=SegmentsResponse)
-def get_segments():
+async def get_segments():
     """Retrieve RFM customer segments and aggregate metrics."""
     try:
         segs = get_segment_aggregates()
@@ -156,7 +163,7 @@ def get_segments():
 
 
 @router.get("/cohorts", response_model=CohortResponse)
-def get_cohorts():
+async def get_cohorts():
     """Retrieve monthly cohort retention and spend matrix."""
     try:
         data = get_cohort_summary()
@@ -182,7 +189,7 @@ def get_cohorts():
 
 
 @router.get("/profitability", response_model=ProfitabilityResponse)
-def get_profitability():
+async def get_profitability():
     """Retrieve customer segment profitability analysis."""
     try:
         profs = get_profitability_summary()
@@ -191,20 +198,20 @@ def get_profitability():
                 segments=[ProfitabilityDetail(**p) for p in profs]
             )
     except Exception as e:
-        logger.warning("Error querying profitability from DB: %s, falling back to cache.", e)
+        logger.warning(
+            "Error querying profitability from DB: %s, falling back to cache.", e
+        )
 
     cache = _get_cache()
     profs = cache.get("profitability", [])
     if profs:
-        return ProfitabilityResponse(
-            segments=[ProfitabilityDetail(**p) for p in profs]
-        )
+        return ProfitabilityResponse(segments=[ProfitabilityDetail(**p) for p in profs])
 
     raise HTTPException(status_code=500, detail="Profitability data not available.")
 
 
 @router.get("/anomalies", response_model=AnomaliesResponse)
-def get_anomalies():
+async def get_anomalies():
     """Retrieve explainable billing anomaly detection results."""
     try:
         data = get_anomalies_summary()
@@ -216,7 +223,9 @@ def get_anomalies():
                 detection_methods=data["detection_methods"],
             )
     except Exception as e:
-        logger.warning("Error querying anomalies from DB: %s, falling back to cache.", e)
+        logger.warning(
+            "Error querying anomalies from DB: %s, falling back to cache.", e
+        )
 
     cache = _get_cache()
     anom_data = cache.get("anomalies", {})
@@ -225,14 +234,16 @@ def get_anomalies():
             anomalies=[AnomalyDetail(**a) for a in anom_data.get("anomalies", [])],
             total_anomalies=anom_data.get("total_anomalies", 2033),
             total_anomalous_amount=anom_data.get("total_anomalous_amount", 342150.0),
-            detection_methods=anom_data.get("detection_methods", ["category_z_score", "iqr_ticket_outlier"]),
+            detection_methods=anom_data.get(
+                "detection_methods", ["category_z_score", "iqr_ticket_outlier"]
+            ),
         )
 
     raise HTTPException(status_code=500, detail="Anomaly data not available.")
 
 
 @router.get("/recommendations", response_model=RecommendationsResponse)
-def get_recommendations():
+async def get_recommendations():
     """Retrieve the three quantified business recommendations."""
     try:
         recs = generate_business_recommendations()
@@ -241,7 +252,9 @@ def get_recommendations():
                 recommendations=[Recommendation(**r) for r in recs]
             )
     except Exception as e:
-        logger.warning("Error generating recommendations from DB: %s, falling back to cache.", e)
+        logger.warning(
+            "Error generating recommendations from DB: %s, falling back to cache.", e
+        )
 
     cache = _get_cache()
     recs = cache.get("recommendations", [])

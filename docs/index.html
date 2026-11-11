@@ -3,375 +3,455 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="SpendSense: Global Payments Network Transaction Analytics & Fraud Risk Intelligence Dashboard.">
-  <title>SpendSense | Payments Network Analytics & Fraud Intelligence</title>
+  <meta name="description" content="SpendSense: Enterprise Payments Network Transaction Analytics & Fraud Risk Intelligence Platform.">
+  <title>SpendSense | Payments Network Risk & Portfolio Intelligence Terminal</title>
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <main>
-    <!-- HERO SECTION -->
-    <section class="hero">
-      <img class="bg-slide active" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1920&q=80" alt="Financial analytics screens">
-      <img class="bg-slide" src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1920&q=80" alt="Abstract network data structure">
-      <img class="bg-slide" src="https://images.unsplash.com/photo-1642543492481-44e81e3914a7?auto=format&fit=crop&w=1920&q=80" alt="Digital financial payment signals">
-      <div class="shade"></div>
-      
-      <header>
-        <div style="display:flex; align-items:center; gap:1.25rem;">
-          <a class="brand" href="#top">SpendSense<span class="acid">.</span>Network</a>
-          <div class="live-badge"><span class="pulse-dot"></span>LIVE TELEMETRY</div>
-        </div>
-        <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">☰</button>
-        <nav class="nav-links" aria-label="Analytical Navigation">
-          <a href="#overview">Overview</a>
-          <a href="#simulator">Risk Simulator</a>
-          <a href="#pillars">Analytics Pillars</a>
-          <a href="#recommendations">Decisions</a>
-          <a href="/api/docs" target="_blank">API Docs</a>
-        </nav>
-      </header>
 
-      <div class="wrap hero-content" id="top">
-        <p class="eyebrow">Global Payments Network Intelligence · Risk & Digital Consumer Analytics</p>
-        <h1>TRANSACTION<br>INTELLIGENCE</h1>
-        <div class="offset">
-          <p class="intro">
-            An enterprise payments risk intelligence platform engineered for modern financial card networks. 
-            Transforming high-velocity transaction streams into cost-sensitive fraud classifiers, RFM customer value tiers, 
-            and data-driven commercial recommendations.
-          </p>
-          <p class="fine">
-            Evaluated on 284,807 card transactions. Severe class imbalance (~0.17% fraud prevalence) 
-            resolved via cost-sensitive gradient boosting and AUPRC threshold optimization.
-          </p>
-          <div class="hero-controls">
-            <a href="#simulator" class="btn-primary">Interactive Simulator</a>
-            <a href="#pillars" class="btn-secondary">Explore 6 Pillars</a>
+  <!-- TOP COMMAND BAR -->
+  <header class="top-command-bar">
+    <div class="wrap command-bar-inner">
+      <div class="brand-block">
+        <a href="#top" class="brand-logo">
+          <span class="brand-dot"></span>
+          SpendSense<span style="color:var(--telemetry-cyan);">.Network</span>
+        </a>
+        <div class="system-status-pill">
+          <span class="live-flag">● TELEMETRY ACTIVE</span>
+          <span style="opacity:0.4;">|</span>
+          <span id="header-engine-status">SQLite (Local Cache)</span>
+        </div>
+      </div>
+
+      <nav class="terminal-nav" aria-label="Terminal Navigation">
+        <a href="#overview" class="nav-link-btn">Overview</a>
+        <a href="#simulator" class="nav-link-btn">Risk Simulator</a>
+        <a href="#pillars" class="nav-link-btn">Analytical Pillars</a>
+        <a href="#recommendations" class="nav-link-btn">Recommendations</a>
+        <a href="#deck" class="nav-link-btn">Board Deck</a>
+        <a href="/api/docs" target="_blank" rel="noopener noreferrer" class="nav-action-btn">API Docs ↗</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO / TELEMETRY OVERVIEW HEADER -->
+    <section class="hero-terminal" id="overview">
+      <div class="wrap">
+        <div class="hero-meta-bar">
+          <span class="classification-tag">GLOBAL PAYMENTS NETWORK INTELLIGENCE // SCHEME PORTFOLIO ANALYTICS</span>
+          <div class="system-status-pill">
+            <span>DATASET: 284,807 TRANSACTIONS</span>
+            <span style="opacity:0.4;">|</span>
+            <span style="color:var(--telemetry-cyan);">FRAUD PREVALENCE: 0.173%</span>
+          </div>
+        </div>
+
+        <h1 class="hero-title">TRANSACTION RISK &<br>PORTFOLIO INTELLIGENCE</h1>
+        
+        <p class="hero-description">
+          An enterprise payments risk telemetry terminal engineered to global card network standards. 
+          Bridging high-velocity transaction risk classification, cost-sensitive machine learning, 
+          RFM customer value segmentation, and quantified commercial portfolio economics.
+        </p>
+
+        <!-- PRIMARY KPI TELEMETRY RIBBON -->
+        <div class="kpi-grid">
+          <div class="kpi-terminal-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Evaluated Transactions</span>
+              <span class="kpi-badge">18 MONTHS</span>
+            </div>
+            <div class="kpi-value-row">
+              <span class="kpi-value num" id="kpi-txns" data-target="284807">284,807</span>
+            </div>
+            <p class="kpi-subtext">Clean transactions across 5,000 unique cardholders with zero missing values.</p>
+          </div>
+
+          <div class="kpi-terminal-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Verified Fraud Charges</span>
+              <span class="kpi-badge" style="color:var(--telemetry-danger);">IMBALANCE 0.173%</span>
+            </div>
+            <div class="kpi-value-row">
+              <span class="kpi-value num" id="kpi-fraud-rate" style="color:var(--telemetry-danger);" data-target="0.173" data-suffix="%">0.173%</span>
+              <span class="kpi-delta delta-alert">492 Flags</span>
+            </div>
+            <p class="kpi-subtext">Total fraud loss volume of $60,127.97 isolated across 18 months.</p>
+          </div>
+
+          <div class="kpi-terminal-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Revenue-at-Risk Avoided</span>
+              <span class="kpi-badge" style="color:var(--telemetry-safe);">MODEL RECALL</span>
+            </div>
+            <div class="kpi-value-row">
+              <span class="kpi-value num" id="kpi-rev-at-risk" style="color:var(--telemetry-safe);" data-target="42538.90" data-prefix="$">$42,538.90</span>
+              <span class="kpi-delta delta-safe">98.98% Caught</span>
+            </div>
+            <p class="kpi-subtext">Capital protected via XGBoost cost-sensitive authorization scoring.</p>
+          </div>
+
+          <div class="kpi-terminal-card">
+            <div class="kpi-card-header">
+              <span class="kpi-label">Advanced Model AUPRC</span>
+              <span class="kpi-badge" style="color:var(--telemetry-cyan);">PR-AUC</span>
+            </div>
+            <div class="kpi-value-row">
+              <span class="kpi-value num" id="kpi-auprc" style="color:var(--telemetry-cyan);" data-target="0.9971">0.9971</span>
+              <span class="kpi-delta delta-safe">64% Less Friction</span>
+            </div>
+            <p class="kpi-subtext">False-positive customer declines reduced from 14 to only 5 cardholders.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- FACTS BAR (4 KEY KPIS WITH ANIMATED COUNTERS) -->
-    <section class="facts" id="overview">
-      <div class="wrap facts-grid">
-        <div class="fact-card">
-          <span class="icon">□</span>
-          <strong id="kpi-txns" data-target="284807">0</strong>
-          <p>Portfolio card transactions evaluated across 18 calendar months with zero nulls.</p>
+    <!-- SECTION: INTERACTIVE RISK DECISION SIMULATOR -->
+    <section class="section-wrapper" id="simulator">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="section-eyebrow">// OPERATING DECISION FRONTIER</div>
+          <h2 class="section-title">Precision-Recall Decision Threshold Simulator</h2>
+          <p class="section-subtitle">
+            Under severe class imbalance (0.17% fraud rate), optimizing for raw accuracy is dangerous: 
+            a model predicting zero fraud achieves 99.83% accuracy while suffering 100% loss. 
+            Test trade-offs dynamically between fraud detection recall and legitimate customer checkout friction.
+          </p>
         </div>
-        <div class="fact-card">
-          <span class="icon">⌖</span>
-          <strong id="kpi-fraud-rate" data-target="0.173" data-suffix="%">0.000%</strong>
-          <p>492 verified fraudulent charges identified under severe class imbalance.</p>
-        </div>
-        <div class="fact-card">
-          <span class="icon">◷</span>
-          <strong id="kpi-rev-at-risk" data-target="42538.90" data-prefix="$">0.00</strong>
-          <p>Estimated revenue-at-risk avoided via 98.98% model recall interception.</p>
-        </div>
-        <div class="fact-card">
-          <span class="icon">◎</span>
-          <strong id="kpi-auprc" data-target="0.997">0.000</strong>
-          <p>AUPRC achieved by XGBoost, capturing complex non-linear feature interactions.</p>
-        </div>
-      </div>
-    </section>
 
-    <!-- INTERACTIVE RISK SIMULATOR / METHODOLOGY SECTION -->
-    <section class="editorial" id="simulator">
-      <span class="ghost">NETWORK</span>
-      <div class="wrap about">
-        <div class="portrait">
-          <div class="chart-card-editorial">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
-              <div class="eyebrow" style="margin-bottom:0;">Live Decision Threshold Simulator</div>
+        <div class="simulator-grid">
+          <!-- Interactive Controls & Metrics Panel -->
+          <div class="terminal-panel">
+            <div class="panel-header">
+              <span class="panel-title"><span>⚙</span> Decision Threshold Parameters</span>
               <span id="slider-val-badge" class="slider-badge">Threshold: 0.50</span>
             </div>
-            
-            <!-- Interactive Slider Control -->
-            <div class="slider-wrapper">
-              <input type="range" id="threshold-slider" min="0.10" max="0.90" step="0.05" value="0.50" aria-label="Decision Threshold">
-              <div class="slider-markers">
-                <span>0.10 (Max Catch)</span>
-                <span>0.50 (Balanced)</span>
-                <span>0.90 (Min Friction)</span>
+
+            <div class="slider-container">
+              <div class="slider-label-row">
+                <span class="slider-title">Classifier Operating Threshold:</span>
+                <span style="font-size:0.75rem; color:var(--text-muted);">Adjust to alter policy</span>
+              </div>
+              <input type="range" id="threshold-slider" min="0.10" max="0.90" step="0.05" value="0.50" aria-label="Classifier Operating Threshold">
+              <div class="slider-ticks">
+                <span>0.10 (Aggressive / Max Catch)</span>
+                <span>0.50 (Recommended Balanced)</span>
+                <span>0.90 (Conservative / Min Friction)</span>
               </div>
             </div>
 
-            <!-- Dynamic Decision Matrix Box -->
-            <div class="matrix-preview">
-              <div class="matrix-stat">
-                <span class="m-label">Recall (Catch Rate)</span>
-                <strong class="m-val" id="dyn-recall">98.98%</strong>
+            <!-- Dynamic Decision Matrix Grid -->
+            <div class="matrix-grid">
+              <div class="matrix-cell safe">
+                <div class="cell-label">Detection Recall</div>
+                <div class="cell-value num" id="dyn-recall">98.98%</div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.2rem;">97 of 98 Frauds Caught</div>
               </div>
-              <div class="matrix-stat">
-                <span class="m-label">Precision</span>
-                <strong class="m-val" id="dyn-precision">95.10%</strong>
+              
+              <div class="matrix-cell cyan">
+                <div class="cell-label">Model Precision</div>
+                <div class="cell-value num" id="dyn-precision">95.10%</div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.2rem;">Flagged Accuracy</div>
               </div>
-              <div class="matrix-stat">
-                <span class="m-label">False Positives</span>
-                <strong class="m-val" id="dyn-fp" style="color:#ff6666;">5 Cardholders</strong>
+
+              <div class="matrix-cell alert">
+                <div class="cell-label">False Positive Declines</div>
+                <div class="cell-value num" id="dyn-fp">5 Cardholders</div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.2rem;">Customer Friction Rate: 0.009%</div>
               </div>
-              <div class="matrix-stat">
-                <span class="m-label">Loss Intercepted</span>
-                <strong class="m-val" id="dyn-avoided" style="color:var(--acid);">$42,538.90</strong>
+
+              <div class="matrix-cell safe">
+                <div class="cell-label">Loss Intercepted</div>
+                <div class="cell-value num" id="dyn-avoided">$42,538.90</div>
+                <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.2rem;">Estimated Avoided Exposure</div>
               </div>
             </div>
 
-            <div id="portrait-pr-curve" class="viz-container">
-              <!-- Rendered via Charts.renderPRCurve -->
+            <div style="font-size:0.8rem; color:var(--text-secondary); line-height:1.5; padding-top:0.5rem;">
+              <strong>Strategic Recommendation:</strong> <span id="dyn-recommendation">Operating at threshold 0.50 balances high-value fraud interception with minimal customer decline friction.</span>
             </div>
-            <p class="caption">Fig. A · Interactive Precision-Recall Frontier (Drag slider to test trade-offs)</p>
           </div>
-        </div>
 
-        <div class="copy">
-          <p class="eyebrow" style="color:#555">Analytical Methodology</p>
-          <h2>We don't optimize for accuracy.<br><b>We optimize for precision under risk.</b></h2>
-          <p>
-            In credit card payments, reporting 99.8% raw accuracy is trivial and dangerous: a model predicting 
-            zero fraud achieves 99.83% accuracy while losing 100% of compromised card volume.
-          </p>
-          <p>
-            SpendSense utilizes a two-tier classification pipeline. We establish a linear baseline via 
-            balanced Logistic Regression, followed by an optimized XGBoost model parameterized with 
-            <code>scale_pos_weight = 577.3</code> to penalize false negatives proportionally. 
-            The result preserves 98.98% recall while slashing false-positive customer friction by 64%.
-          </p>
-          <div class="stats">
-            <div>
-              <strong id="stat-recall">98.98%</strong>
-              <span>Recall on Fraud</span>
+          <!-- PR Curve SVG Visualization -->
+          <div class="terminal-panel">
+            <div class="panel-header">
+              <span class="panel-title"><span>📈</span> Precision-Recall Curve Comparison</span>
+              <span class="slider-badge" style="background:rgba(0,229,153,0.1); color:var(--telemetry-safe); border-color:rgba(0,229,153,0.3);">XGBoost vs Logistic Reg</span>
             </div>
-            <div>
-              <strong id="stat-fp">5 FP</strong>
-              <span>False Positives</span>
+            <div id="portrait-pr-curve" class="viz-box">
+              <!-- Dynamically populated via Charts.renderPRCurve -->
             </div>
-            <div>
-              <strong id="stat-profit">3.16x</strong>
-              <span>Top-Tier Profit Index</span>
+            <div style="display:flex; justify-content:space-between; margin-top:0.75rem; font-size:0.72rem; color:var(--text-muted);">
+              <span>● <span style="color:var(--telemetry-cyan);">XGBoost Advanced (AUPRC 0.9971)</span></span>
+              <span>--- <span style="color:var(--text-muted);">Logistic Regression Baseline (AUPRC 1.0000)</span></span>
+              <span>✦ <span style="color:var(--telemetry-safe);">Active Operating Point</span></span>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- THE DAY / ANALYTICAL PILLARS (DARK SECTION WITH DYNAMIC FILTERING & DUAL-TRACK SYNC) -->
-    <section class="day" id="pillars">
+    <!-- SECTION: SIX ANALYTICAL PILLARS -->
+    <section class="section-wrapper" id="pillars">
       <div class="wrap">
-        <div class="pillars-header">
-          <div>
-            <p class="eyebrow">Portfolio Risk & Commercial Architecture</p>
-            <h2>Six Analytical Pillars.<br>One Unified Payments Network.</h2>
-          </div>
-          <!-- Dynamic Quick Pillar Tab Bar -->
-          <div class="pillar-quick-switcher" id="pillar-quick-switcher" role="tablist" aria-label="Analytical Pillars">
-            <button class="pillar-tab-btn active" data-pillar-idx="0" role="tab" aria-selected="true">01 Loss Trend</button>
-            <button class="pillar-tab-btn" data-pillar-idx="1" role="tab" aria-selected="false">02 Category Mix</button>
-            <button class="pillar-tab-btn" data-pillar-idx="2" role="tab" aria-selected="false">03 RFM Segments</button>
-            <button class="pillar-tab-btn" data-pillar-idx="3" role="tab" aria-selected="false">04 Cohort Decay</button>
-            <button class="pillar-tab-btn" data-pillar-idx="4" role="tab" aria-selected="false">05 Profitability</button>
-            <button class="pillar-tab-btn" data-pillar-idx="5" role="tab" aria-selected="false">06 Anomalies</button>
-          </div>
+        <div class="section-head">
+          <div class="section-eyebrow">// DUAL-TRACK ARCHITECTURE</div>
+          <h2 class="section-title">Six Analytical Pillars of Payments Risk</h2>
+          <p class="section-subtitle">
+            Synchronized analytical views combining risk analytics (fraud loss trajectories, anomaly detection) 
+            with digital consumer growth (RFM tiers, cohort lifecycle decay, net contribution unit economics).
+          </p>
         </div>
 
-        <div class="day-grid">
-          <!-- Interactive Clickable Pillars List (Sticky on desktop) -->
-          <ol class="agenda" id="pillar-nav">
-            <li class="active" data-target-figure="fig-box-trends" data-pillar-idx="0">
-              <time>01</time>
-              <div>
-                <b>Fraud Rate Trend & Monthly Loss Trajectory</b>
-                <p>Tracking time-series fraud incidence, loss volatility, and monthly exposure across the portfolio.</p>
+        <div class="pillars-shell">
+          <!-- Pillar Sticky Navigation Sidebar -->
+          <aside class="pillar-sidebar">
+            <div class="pillar-nav-item active" data-pillar-idx="0">
+              <span class="pillar-num">01</span>
+              <div class="pillar-nav-text">
+                <b>Loss Trajectory & Trend</b>
+                <span>Monthly fraud volume & incidence</span>
               </div>
-            </li>
-            <li data-target-figure="fig-box-spend" data-pillar-idx="1">
-              <time>02</time>
-              <div>
-                <b>Merchant Category Mix & Spend Dispersion</b>
-                <p>Analyzing ticket volume and fraud risk concentration across Travel, Restaurants, and Retail.</p>
-              </div>
-            </li>
-            <li data-target-figure="fig-box-segments" data-pillar-idx="2">
-              <time>03</time>
-              <div>
-                <b>RFM Customer Segmentation (Quintile Scoring)</b>
-                <p>Classifying cardholders into Champions, Loyal Spenders, and At-Risk accounts based on behavioral recency and spend.</p>
-              </div>
-            </li>
-            <li data-target-figure="fig-box-cohort" data-pillar-idx="3">
-              <time>04</time>
-              <div>
-                <b>Cohort Retention & Lifecycle Decay</b>
-                <p>Measuring retention velocity and active cardholder spend decay across 18 acquisition cohorts.</p>
-              </div>
-            </li>
-            <li data-target-figure="fig-box-profitability" data-pillar-idx="4">
-              <time>05</time>
-              <div>
-                <b>Customer Segment Profitability & Unit Economics</b>
-                <p>Estimating net commercial contribution based on 2.50% network take-rate minus observed fraud write-offs.</p>
-              </div>
-            </li>
-            <li data-target-figure="fig-box-anomalies" data-pillar-idx="5">
-              <time>06</time>
-              <div>
-                <b>Explainable Billing Anomaly Detection</b>
-                <p>Automated Z-score and IQR statistical outlier detection pinpointing suspicious charges with human-readable rationale.</p>
-              </div>
-            </li>
-          </ol>
+            </div>
 
-          <!-- Interactive Dynamic Figures Stack -->
-          <div id="figures-stack">
-            <!-- Figure 1: Monthly Fraud Trend -->
-            <figure class="editorial-figure active-figure" id="fig-box-trends" data-pillar-idx="0">
-              <div class="figure-header">
-                <div class="eyebrow" style="margin-bottom:0;">Pillar 01 · Loss Trajectory</div>
-                <span class="figure-tag">Time Series</span>
+            <div class="pillar-nav-item" data-pillar-idx="1">
+              <span class="pillar-num">02</span>
+              <div class="pillar-nav-text">
+                <b>Merchant Category Mix</b>
+                <span>Spend dispersion across sectors</span>
               </div>
-              <div class="pillar-controls">
-                <div class="btn-group" id="trends-view-toggle">
-                  <button class="ctrl-btn active" data-mode="all">Dual-Axis</button>
-                  <button class="ctrl-btn" data-mode="rate">Fraud Rate (%)</button>
-                  <button class="ctrl-btn" data-mode="amount">Loss ($)</button>
+            </div>
+
+            <div class="pillar-nav-item" data-pillar-idx="2">
+              <span class="pillar-num">03</span>
+              <div class="pillar-nav-text">
+                <b>RFM Customer Tiers</b>
+                <span>Quantile value segmentation</span>
+              </div>
+            </div>
+
+            <div class="pillar-nav-item" data-pillar-idx="3">
+              <span class="pillar-num">04</span>
+              <div class="pillar-nav-text">
+                <b>Cohort Lifecycle Decay</b>
+                <span>18-month retention velocity matrix</span>
+              </div>
+            </div>
+
+            <div class="pillar-nav-item" data-pillar-idx="4">
+              <span class="pillar-num">05</span>
+              <div class="pillar-nav-text">
+                <b>Commercial Unit Economics</b>
+                <span>Net contribution & take-rate simulator</span>
+              </div>
+            </div>
+
+            <div class="pillar-nav-item" data-pillar-idx="5">
+              <span class="pillar-num">06</span>
+              <div class="pillar-nav-text">
+                <b>Explainable Anomaly Screen</b>
+                <span>Z-Score & IQR outlier detection</span>
+              </div>
+            </div>
+          </aside>
+
+          <!-- Pillar Dynamic Workspace Content -->
+          <div class="pillar-workspace" id="pillar-active-workspace">
+            
+            <!-- Pillar 01: Fraud Rate Trend -->
+            <div class="pillar-content-block" id="fig-box-trends" data-pillar-idx="0">
+              <div class="pillar-header-row">
+                <div class="pillar-title-block">
+                  <h3>Pillar 01 · Fraud Rate Trajectory & Monthly Loss</h3>
+                  <p>Tracking time-series fraud incidence, loss volatility, and monthly exposure across 18 calendar months.</p>
                 </div>
-                <div id="trends-hover-readout" class="readout-pill">Hover chart to inspect</div>
-              </div>
-              <div id="fig-trends-chart" class="viz-container"></div>
-              <div class="kpi-mini-grid">
-                <div class="kpi-mini"><span>Peak Month</span><strong>Dec · $5,240</strong></div>
-                <div class="kpi-mini"><span>Avg Loss Rate</span><strong>0.173%</strong></div>
-                <div class="kpi-mini"><span>Volatility</span><strong>Moderate (±0.04%)</strong></div>
-              </div>
-              <figcaption><b>Fig. 01</b> · Monthly fraud rate (%) and net fraud chargeback volume ($) over time.</figcaption>
-            </figure>
-
-            <!-- Figure 2: Category Spend Mix -->
-            <figure class="editorial-figure" id="fig-box-spend" data-pillar-idx="1">
-              <div class="figure-header">
-                <div class="eyebrow" style="margin-bottom:0;">Pillar 02 · Category Concentration</div>
-                <span class="figure-tag">Portfolio Mix</span>
-              </div>
-              <div class="pillar-controls">
-                <span class="ctrl-label">Sort:</span>
-                <div class="btn-group" id="spend-sort-toggle">
-                  <button class="ctrl-btn active" data-sort="spend">Spend ($)</button>
-                  <button class="ctrl-btn" data-sort="rate">Fraud Rate (%)</button>
-                  <button class="ctrl-btn" data-sort="alpha">A-Z</button>
+                <div class="control-bar">
+                  <div class="btn-group" id="trends-view-toggle">
+                    <button class="ctrl-btn active" data-mode="all">Dual-Axis</button>
+                    <button class="ctrl-btn" data-mode="rate">Fraud Rate (%)</button>
+                    <button class="ctrl-btn" data-mode="amount">Loss Volume ($)</button>
+                  </div>
+                  <span id="trends-hover-readout" class="readout-pill">Hover chart for monthly telemetry</span>
                 </div>
               </div>
-              <div id="fig-spend-chart" style="padding:0.75rem 0;"></div>
-              <div id="spend-detail-drawer" class="pillar-detail-box" style="display:none;"></div>
-              <figcaption><b>Fig. 02</b> · Portfolio spend concentration and fraud rate across merchant categories. Click a category to inspect.</figcaption>
-            </figure>
-
-            <!-- Figure 3: RFM Segments Summary -->
-            <figure class="editorial-figure" id="fig-box-segments" data-pillar-idx="2">
-              <div class="figure-header">
-                <div class="eyebrow" style="margin-bottom:0;">Pillar 03 · Customer Value Tiers</div>
-                <span class="figure-tag">RFM Model</span>
-              </div>
-              <div class="pillar-controls">
-                <span class="ctrl-label">Filter Tiers:</span>
-                <div class="btn-group" id="segments-filter-toggle">
-                  <button class="ctrl-btn active" data-filter="all">All Tiers (6)</button>
-                  <button class="ctrl-btn" data-filter="core">Core Value</button>
-                  <button class="ctrl-btn" data-filter="atrisk">At-Risk Focus</button>
+              <div id="fig-trends-chart" class="viz-box"></div>
+              <div class="matrix-grid" style="grid-template-columns:repeat(3, 1fr); margin-top:1rem;">
+                <div class="matrix-cell">
+                  <div class="cell-label">Peak Fraud Month</div>
+                  <div class="cell-value num" style="font-size:1rem; color:#fff;">Nov 2023 · $5,240.50</div>
+                </div>
+                <div class="matrix-cell">
+                  <div class="cell-label">Mean Monthly Loss</div>
+                  <div class="cell-value num" style="font-size:1rem; color:var(--telemetry-cyan);">$3,340.44</div>
+                </div>
+                <div class="matrix-cell">
+                  <div class="cell-label">Loss Volatility</div>
+                  <div class="cell-value num" style="font-size:1rem; color:var(--telemetry-safe);">Stable (±0.04% StDev)</div>
                 </div>
               </div>
-              <div id="fig-segments-table" class="viz-container"></div>
-              <div id="segment-detail-drawer" class="pillar-detail-box" style="display:none;"></div>
-              <figcaption><b>Fig. 03</b> · Customer RFM segment distribution, spend behavior, and value classifications. Click any row to inspect.</figcaption>
-            </figure>
+            </div>
 
-            <!-- Figure 4: Cohort Retention -->
-            <figure class="editorial-figure" id="fig-box-cohort" data-pillar-idx="3">
-              <div class="figure-header">
-                <div class="eyebrow" style="margin-bottom:0;">Pillar 04 · Lifecycle Velocity</div>
-                <span class="figure-tag">Cohort Decay</span>
-              </div>
-              <div class="pillar-controls">
-                <div class="btn-group" id="cohort-view-toggle">
-                  <button class="ctrl-btn active" data-view="matrix">Heatmap Matrix</button>
-                  <button class="ctrl-btn" data-view="curve">Decay Curve</button>
+            <!-- Pillar 02: Category Spend Mix -->
+            <div class="pillar-content-block" id="fig-box-spend" data-pillar-idx="1" style="display:none;">
+              <div class="pillar-header-row">
+                <div class="pillar-title-block">
+                  <h3>Pillar 02 · Merchant Category Concentration</h3>
+                  <p>Analyzing ticket volume, fraud chargeback share, and transaction frequency across merchant categories.</p>
                 </div>
-                <div class="stat-badge">Day 90 Inflection: ~48%</div>
+                <div class="control-bar">
+                  <span style="font-size:0.75rem; color:var(--text-muted);">Sort By:</span>
+                  <div class="btn-group" id="spend-sort-toggle">
+                    <button class="ctrl-btn active" data-sort="spend">Gross Spend ($)</button>
+                    <button class="ctrl-btn" data-sort="rate">Fraud Rate (%)</button>
+                    <button class="ctrl-btn" data-sort="alpha">Category A-Z</button>
+                  </div>
+                </div>
               </div>
-              <div id="fig-cohort-chart" class="viz-container"></div>
-              <figcaption><b>Fig. 04</b> · Cohort retention matrix tracking active customer percentage by month.</figcaption>
-            </figure>
+              <div id="fig-spend-chart" class="viz-box" style="padding:0.5rem 0;"></div>
+              <div id="spend-detail-drawer" style="display:none; margin-top:1rem; background:var(--bg-card); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);"></div>
+            </div>
 
-            <!-- Figure 5: Customer Segment Profitability & Unit Economics -->
-            <figure class="editorial-figure" id="fig-box-profitability" data-pillar-idx="4">
-              <div class="figure-header">
-                <div class="eyebrow" style="margin-bottom:0;">Pillar 05 · Commercial Economics</div>
-                <span class="figure-tag">Unit Economics</span>
+            <!-- Pillar 03: RFM Customer Segmentation -->
+            <div class="pillar-content-block" id="fig-box-segments" data-pillar-idx="2" style="display:none;">
+              <div class="pillar-header-row">
+                <div class="pillar-title-block">
+                  <h3>Pillar 03 · RFM Customer Value Segmentation</h3>
+                  <p>Classifying cardholders into 6 strategic tiers via behavioral quantile scoring across Recency, Frequency, and Monetary spend.</p>
+                </div>
+                <div class="control-bar">
+                  <span style="font-size:0.75rem; color:var(--text-muted);">Filter Tiers:</span>
+                  <div class="btn-group" id="segments-filter-toggle">
+                    <button class="ctrl-btn active" data-filter="all">All Tiers (6)</button>
+                    <button class="ctrl-btn" data-filter="core">High-Value Core</button>
+                    <button class="ctrl-btn" data-filter="atrisk">At-Risk Focus</button>
+                  </div>
+                </div>
               </div>
+              <div id="fig-segments-table" class="viz-box" style="padding:0; overflow-x:auto;"></div>
+              <div id="segment-detail-drawer" style="display:none; margin-top:1rem; background:var(--bg-card); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);"></div>
+            </div>
+
+            <!-- Pillar 04: Cohort Retention -->
+            <div class="pillar-content-block" id="fig-box-cohort" data-pillar-idx="3" style="display:none;">
+              <div class="pillar-header-row">
+                <div class="pillar-title-block">
+                  <h3>Pillar 04 · Cohort Lifecycle Retention Matrix</h3>
+                  <p>Tracking 18 acquisition cohorts month-by-month to measure adoption decay, customer survival velocity, and card-of-choice stickiness.</p>
+                </div>
+                <div class="control-bar">
+                  <div class="btn-group" id="cohort-view-toggle">
+                    <button class="ctrl-btn active" data-view="matrix">Heatmap Matrix</button>
+                    <button class="ctrl-btn" data-view="curve">Survival Curve</button>
+                  </div>
+                  <span class="readout-pill">90-Day Inflection: ~48%</span>
+                </div>
+              </div>
+              <div id="fig-cohort-chart" class="viz-box" style="padding:0; overflow-x:auto;"></div>
+            </div>
+
+            <!-- Pillar 05: Customer Segment Profitability -->
+            <div class="pillar-content-block" id="fig-box-profitability" data-pillar-idx="4" style="display:none;">
+              <div class="pillar-header-row">
+                <div class="pillar-title-block">
+                  <h3>Pillar 05 · Commercial Profitability & Unit Economics</h3>
+                  <p>Simulating net commercial contribution margin (Gross Network Interchange minus observed fraud chargeback losses) across tiers.</p>
+                </div>
+              </div>
+
               <!-- Interactive Take-Rate Simulator -->
-              <div class="simulator-box" style="margin-bottom:1rem; padding:1rem; background:#121217; border:1px solid #2a2a35;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
-                  <span style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.08em; color:#aaa;">Network Take Rate Simulator:</span>
-                  <span id="take-rate-val-badge" class="slider-badge" style="color:var(--acid); font-weight:700;">Take Rate: 2.50%</span>
+              <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:1.25rem; margin-bottom:1.25rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+                  <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Network Take-Rate Scenario Simulator</span>
+                  <span id="take-rate-val-badge" class="slider-badge" style="color:var(--telemetry-safe);">Take Rate: 2.50%</span>
                 </div>
-                <input type="range" id="take-rate-slider" class="editorial-range" min="1.0" max="4.0" step="0.1" value="2.5">
-                <div style="display:flex; justify-content:space-between; font-size:0.68rem; color:#666; margin-top:0.35rem;">
-                  <span>1.0% (Discounted)</span>
-                  <span>2.5% (Benchmark Interchange)</span>
-                  <span>4.0% (Premium Rewards)</span>
+                <input type="range" id="take-rate-slider" min="1.0" max="4.0" step="0.1" value="2.5" aria-label="Network Take Rate Slider">
+                <div class="slider-ticks">
+                  <span>1.0% (Discounted / Regulated)</span>
+                  <span>2.5% (Industry Benchmark)</span>
+                  <span>4.0% (Premium Commercial Rewards)</span>
                 </div>
               </div>
-              <div id="fig-profitability-chart" class="viz-container"></div>
-              <figcaption><b>Fig. 05</b> · Dynamic net contribution margin (Gross Take Rate minus observed fraud write-offs) across cardholder tiers.</figcaption>
-            </figure>
+              <div id="fig-profitability-chart" class="viz-box" style="padding:0; overflow-x:auto;"></div>
+            </div>
 
-            <!-- Figure 6: Billing Anomalies Sample with Interactive Filter -->
-            <figure class="editorial-figure" id="fig-box-anomalies" data-pillar-idx="5">
-              <div class="figure-header">
-                <div class="eyebrow" style="margin-bottom:0;">Pillar 06 · Statistical Outliers</div>
-                <span class="figure-tag">Anomaly Screen</span>
+            <!-- Pillar 06: Explainable Billing Anomalies -->
+            <div class="pillar-content-block" id="fig-box-anomalies" data-pillar-idx="5" style="display:none;">
+              <div class="pillar-header-row">
+                <div class="pillar-title-block">
+                  <h3>Pillar 06 · Explainable Billing Anomaly Screen</h3>
+                  <p>Dual-algorithm outlier detection (Category Log Z-Score and 4x IQR) isolating suspicious billing tickets with human-readable rationale.</p>
+                </div>
               </div>
-              <div style="margin-block:0.5rem 0.75rem;">
-                <input type="text" id="anomaly-search" placeholder="Filter by amount, reason, or transaction ID..." class="anom-search-input">
-              </div>
-              <div class="pillar-controls" style="margin-bottom:0.75rem;">
+
+              <div style="display:flex; gap:1rem; align-items:center; margin-bottom:1rem; flex-wrap:wrap;">
+                <div style="flex:1; min-width:240px;">
+                  <input type="text" id="anomaly-search" placeholder="Search by customer ID, reason, or ticket amount..." class="search-input">
+                </div>
                 <div class="btn-group" id="anomaly-filter-chips">
-                  <button class="ctrl-btn active" data-chip="all">All</button>
-                  <button class="ctrl-btn" data-chip="extreme">>4.0σ Extreme</button>
-                  <button class="ctrl-btn" data-chip="highval">>$1,500 Ticket</button>
+                  <button class="ctrl-btn active" data-chip="all">All Anomalies</button>
+                  <button class="ctrl-btn" data-chip="extreme">>4.0σ Extreme Outliers</button>
+                  <button class="ctrl-btn" data-chip="highval">Ticket > $1,500</button>
                 </div>
                 <span id="anomaly-count-badge" class="readout-pill">Showing 5 anomalies</span>
               </div>
-              <div id="fig-anomalies-table" class="viz-container"></div>
-              <div style="display:flex; justify-content:center; margin-top:0.75rem;">
-                <button id="anomalies-show-more-btn" class="ctrl-btn" style="width:100%; max-width:240px; padding:0.5rem;">Load More Anomalies</button>
+
+              <div id="fig-anomalies-table" class="viz-box" style="padding:0; overflow-x:auto;"></div>
+              
+              <div style="display:flex; justify-content:center; margin-top:1rem;">
+                <button id="anomalies-show-more-btn" class="ctrl-btn" style="background:var(--bg-card); border:1px solid var(--border-subtle); padding:0.5rem 1.5rem; border-radius:var(--radius-sm);">Load More Anomalies</button>
               </div>
-              <figcaption><b>Fig. 06</b> · Sample of explainable statistical billing anomalies flagged for automated review. Click any row to inspect.</figcaption>
-            </figure>
+            </div>
+
           </div>
         </div>
       </div>
     </section>
 
-    <!-- CTA / 3 QUANTIFIED RECOMMENDATIONS WITH SIMULATOR -->
-    <section class="cta" id="recommendations">
+    <!-- SECTION: THREE QUANTIFIED BUSINESS RECOMMENDATIONS -->
+    <section class="section-wrapper" id="recommendations">
       <div class="wrap">
-        <h2>THREE QUANTIFIED<br>BUSINESS RECOMMENDATIONS.</h2>
-        <div class="offset">
-          <p class="intro">
-            Translating predictive risk intelligence and customer segmentation into concrete, quantified 
-            action items for payments network risk, product, and digital commerce leadership.
+        <div class="section-head">
+          <div class="section-eyebrow">// EXECUTIVE BOARD DECISIONS</div>
+          <h2 class="section-title">Three Quantified Commercial Recommendations</h2>
+          <p class="section-subtitle">
+            Directly translating risk telemetry and behavioral segmentation into three actionable, 
+            dollar-quantified business strategies for payments network leadership.
           </p>
-          <div id="recommendations-container" style="margin-top:2rem;">
-            <!-- Dynamically populated via app.js -->
+        </div>
+
+        <div class="recommendations-grid" id="recommendations-container">
+          <!-- Dynamically populated via app.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: EXECUTIVE PRESENTATION DECK DELIVERABLE -->
+    <section class="section-wrapper" id="deck" style="border-bottom:none;">
+      <div class="wrap">
+        <div class="deck-banner">
+          <div class="deck-content">
+            <div style="font-family:var(--font-mono); font-size:0.75rem; color:var(--telemetry-cyan); font-weight:700; margin-bottom:0.25rem;">BOARD-READY EXECUTIVE PRESENTATION</div>
+            <h3>SpendSense Recommendations Deck (.pptx)</h3>
+            <p>
+              A 6-slide widescreen executive slide deck formatted to McKinsey/Bain visual communication standards, 
+              translating model AUPRC, customer segment profitability, and the 3 strategic mandates into board decisions.
+            </p>
           </div>
-          <p class="fine">
-            Engineered to global payments network industry standards. Supported by verifiable PostgreSQL queries and model artifacts.
-          </p>
+          <div class="deck-actions">
+            <a href="deliverables/SpendSense_Recommendations.pptx" download class="btn-primary">
+              <span>⬇</span> Download Executive Deck (.pptx)
+            </a>
+            <a href="/api/docs" target="_blank" rel="noopener noreferrer" class="btn-secondary">
+              <span>⚡</span> Explore OpenAPI Spec
+            </a>
+          </div>
         </div>
       </div>
     </section>
@@ -379,27 +459,20 @@
 
   <!-- FOOTER -->
   <footer>
-    <div class="wrap footer">
-      <a class="brand" href="#top">SpendSense<span class="acid">.</span>Network</a>
-      <div style="font-size:0.75rem; color:#aaa;">
-        <span>Stack: Python · PostgreSQL · XGBoost · FastAPI · Modern Editorial Web Engine</span>
+    <div class="wrap footer-inner">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <span class="brand-logo" style="font-size:0.85rem;">SpendSense<span style="color:var(--telemetry-cyan);">.Network</span></span>
+        <span style="opacity:0.4;">|</span>
+        <span>Swiss Modernist Industrial Fintech Architecture</span>
       </div>
-      <p>© 2026 SpendSense Analytics. Global Card Payments Network Intelligence Simulation.</p>
+      <div>
+        <span>Engineered with Python · FastAPI · PostgreSQL · XGBoost · Clean SVG Telemetry Engine</span>
+      </div>
     </div>
   </footer>
 
+  <!-- Scripts -->
   <script src="js/charts.js"></script>
   <script src="js/app.js"></script>
-  <script>
-    const slides = document.querySelectorAll('.hero img.bg-slide');
-    let current = 0;
-    if (slides.length > 1) {
-      setInterval(() => {
-        slides[current].classList.remove('active');
-        current = (current + 1) % slides.length;
-        slides[current].classList.add('active');
-      }, 5000);
-    }
-  </script>
 </body>
 </html>

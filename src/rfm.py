@@ -16,12 +16,11 @@ Maps combined scores into actionable business segments:
 """
 
 import logging
-from datetime import datetime
-import numpy as np
+
 import pandas as pd
 from sqlalchemy import text
 
-from src.database import get_engine, execute_sql
+from src.database import execute_sql, get_engine
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ logger = logging.getLogger(__name__)
 def compute_rfm_segments(reference_date: str = "2024-07-01") -> pd.DataFrame:
     """Extract customer transaction summaries and compute RFM metrics."""
     logger.info("Computing RFM metrics using reference date: %s", reference_date)
-    
+
     sql = """
         SELECT
             ce.customer_id,
@@ -50,7 +49,7 @@ def compute_rfm_segments(reference_date: str = "2024-07-01") -> pd.DataFrame:
     ref_dt = pd.to_datetime(reference_date)
     df["last_txn_date"] = pd.to_datetime(df["last_txn_date"])
     df["recency_days"] = (ref_dt - df["last_txn_date"]).dt.days.clip(lower=0)
-    
+
     # Clean monetary and frequency
     df["frequency"] = df["frequency"].astype(int)
     df["monetary"] = df["monetary"].astype(float)
@@ -58,13 +57,21 @@ def compute_rfm_segments(reference_date: str = "2024-07-01") -> pd.DataFrame:
 
     # Compute quintile scores (1 to 5)
     # Recency: lower days = higher score (5 is best)
-    df["r_score"] = pd.qcut(df["recency_days"].rank(method="first", ascending=False), 5, labels=[1, 2, 3, 4, 5]).astype(int)
-    
+    df["r_score"] = pd.qcut(
+        df["recency_days"].rank(method="first", ascending=False),
+        5,
+        labels=[1, 2, 3, 4, 5],
+    ).astype(int)
+
     # Frequency: higher count = higher score (5 is best)
-    df["f_score"] = pd.qcut(df["frequency"].rank(method="first", ascending=True), 5, labels=[1, 2, 3, 4, 5]).astype(int)
-    
+    df["f_score"] = pd.qcut(
+        df["frequency"].rank(method="first", ascending=True), 5, labels=[1, 2, 3, 4, 5]
+    ).astype(int)
+
     # Monetary: higher spend = higher score (5 is best)
-    df["m_score"] = pd.qcut(df["monetary"].rank(method="first", ascending=True), 5, labels=[1, 2, 3, 4, 5]).astype(int)
+    df["m_score"] = pd.qcut(
+        df["monetary"].rank(method="first", ascending=True), 5, labels=[1, 2, 3, 4, 5]
+    ).astype(int)
 
     # Combined RFM Score
     df["rfm_score"] = df["r_score"] + df["f_score"] + df["m_score"]
@@ -87,7 +94,10 @@ def compute_rfm_segments(reference_date: str = "2024-07-01") -> pd.DataFrame:
 
     df["segment_label"] = df.apply(assign_segment, axis=1)
 
-    logger.info("RFM segmentation completed. Segment distribution:\n%s", df["segment_label"].value_counts())
+    logger.info(
+        "RFM segmentation completed. Segment distribution:\n%s",
+        df["segment_label"].value_counts(),
+    )
     return df
 
 
@@ -95,8 +105,15 @@ def save_rfm_segments_to_db(df_rfm: pd.DataFrame) -> None:
     """Save computed RFM segments into rfm_segments table."""
     engine = get_engine()
     cols = [
-        "customer_id", "recency_days", "frequency", "monetary",
-        "r_score", "f_score", "m_score", "rfm_score", "segment_label"
+        "customer_id",
+        "recency_days",
+        "frequency",
+        "monetary",
+        "r_score",
+        "f_score",
+        "m_score",
+        "rfm_score",
+        "segment_label",
     ]
     df_save = df_rfm[cols].copy()
 
@@ -130,17 +147,19 @@ def get_segment_aggregates() -> list[dict]:
         t_spend = float(r["total_spend"])
         c_count = int(r["customer_count"])
         avg_sp = float(r["avg_spend"])
-        
+
         # Calculate profitability proxy (normalized profit index)
         # Relative to average customer spend across portfolio
-        results.append({
-            "segment_label": r["segment_label"],
-            "customer_count": c_count,
-            "total_spend": t_spend,
-            "avg_spend": avg_sp,
-            "avg_frequency": float(r["avg_frequency"]),
-            "avg_recency_days": float(r["avg_recency_days"]),
-            "revenue_share": round((t_spend / total_spend) * 100, 2),
-            "profit_index": round(avg_sp / 1000.0, 2),
-        })
+        results.append(
+            {
+                "segment_label": r["segment_label"],
+                "customer_count": c_count,
+                "total_spend": t_spend,
+                "avg_spend": avg_sp,
+                "avg_frequency": float(r["avg_frequency"]),
+                "avg_recency_days": float(r["avg_recency_days"]),
+                "revenue_share": round((t_spend / total_spend) * 100, 2),
+                "profit_index": round(avg_sp / 1000.0, 2),
+            }
+        )
     return results

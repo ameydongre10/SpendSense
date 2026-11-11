@@ -18,18 +18,22 @@ Every flagged record includes a human-readable explanation and the exact statist
 """
 
 import logging
+
 import numpy as np
 import pandas as pd
 from sqlalchemy import text
 
-from src.database import get_engine, execute_sql
+from src.database import execute_sql, get_engine
 
 logger = logging.getLogger(__name__)
 
 
 def detect_billing_anomalies(limit_records: int = 50000) -> pd.DataFrame:
     """Run explainable anomaly detection on transaction dataset."""
-    logger.info("Detecting billing anomalies across transaction records (sample: %d)...", limit_records)
+    logger.info(
+        "Detecting billing anomalies across transaction records (sample: %d)...",
+        limit_records,
+    )
 
     sql = f"""
         SELECT
@@ -54,24 +58,28 @@ def detect_billing_anomalies(limit_records: int = 50000) -> pd.DataFrame:
     anomalies = []
 
     # ── Method 1: Category Log Z-Score ───────────────────────────
-    category_stats = df.groupby("merchant_category")["log_amount"].agg(["mean", "std"]).reset_index()
+    category_stats = (
+        df.groupby("merchant_category")["log_amount"].agg(["mean", "std"]).reset_index()
+    )
     df = df.merge(category_stats, on="merchant_category", suffixes=("", "_cat"))
     df["z_score_cat"] = (df["log_amount"] - df["mean"]) / df["std"].replace(0, 1)
 
     cat_outliers = df[df["z_score_cat"] > 3.5].copy()
     for _, row in cat_outliers.iterrows():
-        anomalies.append({
-            "transaction_id": int(row["transaction_id"]),
-            "customer_id": str(row["customer_id"]),
-            "amount": round(float(row["amount"]), 2),
-            "anomaly_score": round(float(row["z_score_cat"]), 2),
-            "is_anomaly": True,
-            "detection_method": "category_z_score",
-            "reason": (
-                f"Amount ${row['amount']:.2f} is {row['z_score_cat']:.1f} standard deviations "
-                f"above the {row['merchant_category']} category average."
-            ),
-        })
+        anomalies.append(
+            {
+                "transaction_id": int(row["transaction_id"]),
+                "customer_id": str(row["customer_id"]),
+                "amount": round(float(row["amount"]), 2),
+                "anomaly_score": round(float(row["z_score_cat"]), 2),
+                "is_anomaly": True,
+                "detection_method": "category_z_score",
+                "reason": (
+                    f"Amount ${row['amount']:.2f} is {row['z_score_cat']:.1f} standard deviations "
+                    f"above the {row['merchant_category']} category average."
+                ),
+            }
+        )
 
     # ── Method 2: High Amount Outlier (IQR) ──────────────────────
     q25 = df["amount"].quantile(0.25)
@@ -81,23 +89,25 @@ def detect_billing_anomalies(limit_records: int = 50000) -> pd.DataFrame:
 
     iqr_outliers = df[df["amount"] > extreme_cutoff].copy()
     existing_ids = {a["transaction_id"] for a in anomalies}
-    
+
     for _, row in iqr_outliers.iterrows():
         t_id = int(row["transaction_id"])
         if t_id not in existing_ids:
             score = round(float(row["amount"] / extreme_cutoff), 2)
-            anomalies.append({
-                "transaction_id": t_id,
-                "customer_id": str(row["customer_id"]),
-                "amount": round(float(row["amount"]), 2),
-                "anomaly_score": score,
-                "is_anomaly": True,
-                "detection_method": "iqr_ticket_outlier",
-                "reason": (
-                    f"Amount ${row['amount']:.2f} exceeds extreme portfolio ticket threshold of "
-                    f"${extreme_cutoff:.2f} (4.0x IQR above Q75)."
-                ),
-            })
+            anomalies.append(
+                {
+                    "transaction_id": t_id,
+                    "customer_id": str(row["customer_id"]),
+                    "amount": round(float(row["amount"]), 2),
+                    "anomaly_score": score,
+                    "is_anomaly": True,
+                    "detection_method": "iqr_ticket_outlier",
+                    "reason": (
+                        f"Amount ${row['amount']:.2f} exceeds extreme portfolio ticket threshold of "
+                        f"${extreme_cutoff:.2f} (4.0x IQR above Q75)."
+                    ),
+                }
+            )
             existing_ids.add(t_id)
 
     df_anomalies = pd.DataFrame(anomalies)
@@ -109,8 +119,13 @@ def save_billing_anomalies_to_db(df_anom: pd.DataFrame) -> None:
     """Save detected anomalies to billing_anomalies table."""
     engine = get_engine()
     cols = [
-        "transaction_id", "customer_id", "amount",
-        "anomaly_score", "is_anomaly", "detection_method", "reason"
+        "transaction_id",
+        "customer_id",
+        "amount",
+        "anomaly_score",
+        "is_anomaly",
+        "detection_method",
+        "reason",
     ]
     df_save = df_anom[cols].copy()
 
@@ -151,10 +166,10 @@ def get_anomalies_summary() -> dict:
         }
         for r in rows
     ]
-    
+
     total_amount = sum(a["amount"] for a in anomalies)
     methods = list({a["detection_method"] for a in anomalies})
-    
+
     return {
         "anomalies": anomalies,
         "total_anomalies": len(anomalies),

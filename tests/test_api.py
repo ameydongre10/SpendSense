@@ -1,7 +1,7 @@
 """SpendSense — FastAPI Endpoints Integration Tests"""
 
-import pytest
 from fastapi.testclient import TestClient
+
 from api.main import app
 
 client = TestClient(app)
@@ -95,3 +95,22 @@ def test_recommendations_endpoint():
     data = response.json()
     assert "recommendations" in data
     assert len(data["recommendations"]) == 3
+
+
+def test_serverless_entrypoint_routes():
+    """Verify api/index.py serverless entrypoint matches both /api and root paths."""
+    from api.index import app as serverless_app
+
+    serverless_client = TestClient(serverless_app)
+
+    res_root = serverless_client.get("/health")
+    assert res_root.status_code == 200
+    assert res_root.json()["status"] == "healthy"
+
+    res_api = serverless_client.get("/api/health")
+    assert res_api.status_code == 200
+    assert res_api.json()["status"] == "healthy"
+
+    res_ov = serverless_client.get("/api/overview")
+    assert res_ov.status_code == 200
+    assert res_ov.json()["total_transactions"] == 284807

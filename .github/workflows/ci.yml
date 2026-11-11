@@ -1,0 +1,70 @@
+name: SpendSense Enterprise CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  quality-gate:
+    name: Code Quality & Automated Test Suite
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-ml.txt
+          pip install pytest pytest-cov ruff httpx
+
+      - name: Lint with Ruff
+        run: |
+          ruff check . --ignore E501
+
+      - name: Validate Frontend Synchronization (Zero Drift)
+        run: |
+          python scripts/sync_frontend.py
+          git diff --exit-code docs/ public/ || (echo "Frontend drift detected! Run scripts/sync_frontend.py." && exit 1)
+
+      - name: Execute Pytest Suite with Coverage
+        run: |
+          pytest --cov=src --cov=api --cov-report=term-missing tests/
+
+  docker-build:
+    name: Docker Multi-Stage Build Verification
+    runs-on: ubuntu-latest
+    needs: quality-gate
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: spendsense:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

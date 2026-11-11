@@ -12,10 +12,11 @@ Provides actionable insight into customer lifetime value decay and retention vel
 """
 
 import logging
+
 import pandas as pd
 from sqlalchemy import text
 
-from src.database import get_engine, execute_sql
+from src.database import execute_sql, get_engine
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ logger = logging.getLogger(__name__)
 def compute_cohort_retention() -> pd.DataFrame:
     """Calculate monthly cohort retention and spend matrix."""
     logger.info("Computing cohort retention matrix...")
-    
+
     sql = """
         SELECT
             ce.customer_id,
@@ -43,9 +44,9 @@ def compute_cohort_retention() -> pd.DataFrame:
     # Determine cohort month (first transaction month for each customer)
     first_txns = df.groupby("customer_id")["txn_date"].min().reset_index()
     first_txns.columns = ["customer_id", "cohort_date"]
-    
+
     df = df.merge(first_txns, on="customer_id")
-    
+
     # Calculate period index (months elapsed between cohort_date and txn_date)
     year_diff = df["txn_date"].dt.year - df["cohort_date"].dt.year
     month_diff = df["txn_date"].dt.month - df["cohort_date"].dt.month
@@ -63,8 +64,10 @@ def compute_cohort_retention() -> pd.DataFrame:
     ).reset_index()
 
     # Determine initial cohort size (period_index == 0)
-    cohort_sizes = cohort_data[cohort_data["period_index"] == 0].set_index("cohort_month")["customer_count"]
-    
+    cohort_sizes = cohort_data[cohort_data["period_index"] == 0].set_index(
+        "cohort_month"
+    )["customer_count"]
+
     cohort_data["initial_size"] = cohort_data["cohort_month"].map(cohort_sizes)
     cohort_data["retention_rate"] = (
         cohort_data["customer_count"] / cohort_data["initial_size"] * 100.0
@@ -72,7 +75,9 @@ def compute_cohort_retention() -> pd.DataFrame:
     cohort_data["total_spend"] = cohort_data["total_spend"].round(2)
     cohort_data["avg_spend"] = cohort_data["avg_spend"].round(2)
 
-    logger.info("Cohort matrix computed across %d cohort-period pairs.", len(cohort_data))
+    logger.info(
+        "Cohort matrix computed across %d cohort-period pairs.", len(cohort_data)
+    )
     return cohort_data
 
 
@@ -80,8 +85,13 @@ def save_cohort_analysis_to_db(df_cohort: pd.DataFrame) -> None:
     """Save computed cohort retention rows into cohort_analysis table."""
     engine = get_engine()
     cols = [
-        "cohort_month", "period_month", "period_index",
-        "customer_count", "retention_rate", "total_spend", "avg_spend"
+        "cohort_month",
+        "period_month",
+        "period_index",
+        "customer_count",
+        "retention_rate",
+        "total_spend",
+        "avg_spend",
     ]
     df_save = df_cohort[cols].copy()
 

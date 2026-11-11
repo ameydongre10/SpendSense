@@ -12,14 +12,14 @@ in data/raw/creditcard.csv with full transparency logging.
 """
 
 import logging
-import os
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from sqlalchemy import text
 
 from src.config import Config
-from src.database import get_engine, init_db, execute_sql
+from src.database import get_engine, init_db
 
 logger = logging.getLogger(__name__)
 
@@ -28,14 +28,18 @@ def generate_benchmark_dataset(
     output_path: Path,
     n_samples: int = 284807,
     n_frauds: int = 492,
-    random_state: int = 42
+    random_state: int = 42,
 ) -> pd.DataFrame:
     """Generate a statistically accurate simulation of the Kaggle Credit Card dataset.
-    
+
     Reproduces the exact schema, row counts, feature correlations, and ~0.17% fraud rate.
     """
-    logger.info("Generating benchmark dataset with %d rows and %d frauds (~%.3f%%)...",
-                n_samples, n_frauds, (n_frauds / n_samples) * 100)
+    logger.info(
+        "Generating benchmark dataset with %d rows and %d frauds (~%.3f%%)...",
+        n_samples,
+        n_frauds,
+        (n_frauds / n_samples) * 100,
+    )
     rng = np.random.default_rng(random_state)
     n_legit = n_samples - n_frauds
 
@@ -45,7 +49,9 @@ def generate_benchmark_dataset(
     time_arr = np.concatenate([time_legit, time_fraud])
 
     # Class labels
-    labels = np.concatenate([np.zeros(n_legit, dtype=np.int32), np.ones(n_frauds, dtype=np.int32)])
+    labels = np.concatenate(
+        [np.zeros(n_legit, dtype=np.int32), np.ones(n_frauds, dtype=np.int32)]
+    )
 
     # Amount: heavily skewed (lognormal)
     # Legitimate txns: median ~$22, mean ~$88
@@ -60,7 +66,7 @@ def generate_benchmark_dataset(
     for i in range(1, 29):
         col_name = f"V{i}"
         legit_vals = rng.normal(loc=0.0, scale=1.0, size=n_legit)
-        
+
         # Inject known separability patterns from Kaggle empirical literature:
         # V14, V12, V10 are strongly negative for fraud
         # V4, V11 are positive for fraud
@@ -80,19 +86,26 @@ def generate_benchmark_dataset(
 
     # Shuffle to intersperse frauds naturally while preserving Time sort roughly
     perm = rng.permutation(n_samples)
-    df = pd.DataFrame({
-        "Time": time_arr[perm],
-        **{k: v[perm] for k, v in v_data.items()},
-        "Amount": amount_arr[perm],
-        "Class": labels[perm],
-    })
+    df = pd.DataFrame(
+        {
+            "Time": time_arr[perm],
+            **{k: v[perm] for k, v in v_data.items()},
+            "Amount": amount_arr[perm],
+            "Class": labels[perm],
+        }
+    )
 
     # Sort primarily by Time
     df = df.sort_values(by="Time").reset_index(drop=True)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(output_path, index=False)
-    logger.info("Saved benchmark dataset to %s (%d rows, %d frauds)", output_path, len(df), df['Class'].sum())
+    logger.info(
+        "Saved benchmark dataset to %s (%d rows, %d frauds)",
+        output_path,
+        len(df),
+        df["Class"].sum(),
+    )
     return df
 
 
@@ -100,7 +113,9 @@ def load_raw_dataset(path: Path | None = None) -> pd.DataFrame:
     """Load the raw dataset from path or generate the Kaggle-compliant benchmark."""
     csv_path = path or Config.RAW_DATA_PATH
     if not csv_path.exists():
-        logger.warning("Dataset not found at %s. Creating Kaggle benchmark dataset...", csv_path)
+        logger.warning(
+            "Dataset not found at %s. Creating Kaggle benchmark dataset...", csv_path
+        )
         return generate_benchmark_dataset(csv_path)
 
     logger.info("Loading existing dataset from %s", csv_path)
@@ -111,7 +126,7 @@ def load_raw_dataset(path: Path | None = None) -> pd.DataFrame:
 def validate_and_clean_data(df: pd.DataFrame) -> pd.DataFrame:
     """Validate schema, check missing values, and deduplicate."""
     initial_rows = len(df)
-    
+
     # Check required columns
     missing_cols = [c for c in Config.EXPECTED_COLUMNS if c not in df.columns]
     if missing_cols:
@@ -126,8 +141,12 @@ def validate_and_clean_data(df: pd.DataFrame) -> pd.DataFrame:
     # Deduplicate (if identical Time, Amount, Class and V components)
     df = df.drop_duplicates().copy()
     cleaned_rows = len(df)
-    logger.info("Validation complete. Initial: %d, Cleaned: %d, Removed: %d",
-                initial_rows, cleaned_rows, initial_rows - cleaned_rows)
+    logger.info(
+        "Validation complete. Initial: %d, Cleaned: %d, Removed: %d",
+        initial_rows,
+        cleaned_rows,
+        initial_rows - cleaned_rows,
+    )
     return df
 
 
@@ -137,11 +156,13 @@ def ingest_transactions_to_db(df: pd.DataFrame, batch_size: int = 10000) -> int:
     engine = get_engine()
 
     # Prepare DataFrame for insertion
-    insert_df = df.rename(columns={
-        "Time": "time_elapsed",
-        "Amount": "amount",
-        "Class": "is_fraud",
-    })
+    insert_df = df.rename(
+        columns={
+            "Time": "time_elapsed",
+            "Amount": "amount",
+            "Class": "is_fraud",
+        }
+    )
     # Lowercase V columns: V1 -> v1
     v_rename = {f"V{i}": f"v{i}" for i in range(1, 29)}
     insert_df = insert_df.rename(columns=v_rename)
@@ -153,8 +174,14 @@ def ingest_transactions_to_db(df: pd.DataFrame, batch_size: int = 10000) -> int:
     # Clear existing if needed
     with engine.begin() as conn:
         conn.execute(text("DELETE FROM transactions"))
-    
+
     # Insert in chunks
-    insert_df.to_sql("transactions", con=engine, if_exists="append", index=False, chunksize=batch_size)
+    insert_df.to_sql(
+        "transactions",
+        con=engine,
+        if_exists="append",
+        index=False,
+        chunksize=batch_size,
+    )
     logger.info("Successfully ingested %d transactions into database.", len(insert_df))
     return len(insert_df)

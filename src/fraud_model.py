@@ -11,23 +11,22 @@ Recall, and AUPRC (never raw accuracy).
 
 import json
 import logging
-from pathlib import Path
-from typing import Dict, Any, Tuple
+from typing import Any
+
 import joblib
 import numpy as np
-import pandas as pd
-from sklearn.linear_model import LogisticRegression
 import xgboost as xgb
+from sklearn.linear_model import LogisticRegression
 from sqlalchemy import text
 
 from src.config import Config
-from src.database import get_engine, execute_sql
+from src.database import get_engine
+from src.evaluation import evaluate_classifier_performance
 from src.preprocessing import (
+    get_stratified_train_test_split,
     load_dataset_for_modeling,
     prepare_features_and_target,
-    get_stratified_train_test_split,
 )
-from src.evaluation import evaluate_classifier_performance
 
 logger = logging.getLogger(__name__)
 
@@ -37,10 +36,10 @@ def train_logistic_regression_baseline(
     y_train: np.ndarray,
     X_test: np.ndarray,
     y_test: np.ndarray,
-) -> Tuple[LogisticRegression, Dict[str, Any]]:
+) -> tuple[LogisticRegression, dict[str, Any]]:
     """Train baseline Logistic Regression with class-weight compensation."""
     logger.info("Training Baseline Logistic Regression with balanced class weights...")
-    
+
     # Class weight='balanced' adjusts weights inversely proportional to class frequencies
     lr = LogisticRegression(
         class_weight="balanced",
@@ -53,7 +52,7 @@ def train_logistic_regression_baseline(
 
     # Predict probabilities for positive class (fraud)
     y_pred_proba = lr.predict_proba(X_test)[:, 1]
-    
+
     # Evaluate at optimal F1 threshold or standard 0.5
     eval_results = evaluate_classifier_performance(
         y_true=y_test,
@@ -64,8 +63,10 @@ def train_logistic_regression_baseline(
     eval_results["class_imbalance_strategy"] = "class_weight='balanced'"
     eval_results["training_samples"] = len(y_train)
     eval_results["test_samples"] = len(y_test)
-    eval_results["notes"] = "Linear baseline with balanced class weights. Fast and interpretable."
-    
+    eval_results["notes"] = (
+        "Linear baseline with balanced class weights. Fast and interpretable."
+    )
+
     return lr, eval_results
 
 
@@ -74,7 +75,7 @@ def train_xgboost_advanced(
     y_train: np.ndarray,
     X_test: np.ndarray,
     y_test: np.ndarray,
-) -> Tuple[xgb.XGBClassifier, Dict[str, Any]]:
+) -> tuple[xgb.XGBClassifier, dict[str, Any]]:
     """Train advanced XGBoost model with scale_pos_weight for extreme class imbalance."""
     logger.info("Training Advanced XGBoost Classifier...")
 
@@ -82,7 +83,9 @@ def train_xgboost_advanced(
     n_neg = (y_train == 0).sum()
     n_pos = (y_train == 1).sum()
     scale_pos = float(n_neg / max(1, n_pos))
-    logger.info("XGBoost scale_pos_weight set to %.2f (neg/pos ratio in train)", scale_pos)
+    logger.info(
+        "XGBoost scale_pos_weight set to %.2f (neg/pos ratio in train)", scale_pos
+    )
 
     xgb_model = xgb.XGBClassifier(
         n_estimators=100,
@@ -109,12 +112,14 @@ def train_xgboost_advanced(
     eval_results["class_imbalance_strategy"] = f"scale_pos_weight={scale_pos:.1f}"
     eval_results["training_samples"] = len(y_train)
     eval_results["test_samples"] = len(y_test)
-    eval_results["notes"] = "Gradient boosted decision trees capturing non-linear interactions across PCA components."
+    eval_results["notes"] = (
+        "Gradient boosted decision trees capturing non-linear interactions across PCA components."
+    )
 
     return xgb_model, eval_results
 
 
-def save_model_results_to_db(lr_eval: Dict[str, Any], xgb_eval: Dict[str, Any]) -> None:
+def save_model_results_to_db(lr_eval: dict[str, Any], xgb_eval: dict[str, Any]) -> None:
     """Save model evaluation metrics to the model_results database table."""
     engine = get_engine()
     with engine.begin() as conn:
@@ -134,12 +139,12 @@ def save_model_results_to_db(lr_eval: Dict[str, Any], xgb_eval: Dict[str, Any]) 
                         :training_samples, :test_samples, :notes
                     )
                 """),
-                res
+                res,
             )
     logger.info("Saved model evaluation results to database table model_results.")
 
 
-def run_fraud_modeling_pipeline(limit: int | None = None) -> Dict[str, Any]:
+def run_fraud_modeling_pipeline(limit: int | None = None) -> dict[str, Any]:
     """Execute complete fraud modeling workflow: load -> split -> train -> evaluate -> persist."""
     logger.info("Starting complete Fraud Risk Modeling pipeline...")
     Config.ensure_directories()
@@ -149,10 +154,14 @@ def run_fraud_modeling_pipeline(limit: int | None = None) -> Dict[str, Any]:
     X, y, feature_cols = prepare_features_and_target(df)
 
     # 2. Stratified train/test split
-    X_train, X_test, y_train, y_test = get_stratified_train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = get_stratified_train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
 
     # 3. Train Baseline (Logistic Regression)
-    lr_model, lr_eval = train_logistic_regression_baseline(X_train, y_train, X_test, y_test)
+    lr_model, lr_eval = train_logistic_regression_baseline(
+        X_train, y_train, X_test, y_test
+    )
 
     # 4. Train Advanced (XGBoost)
     xgb_model, xgb_eval = train_xgboost_advanced(X_train, y_train, X_test, y_test)

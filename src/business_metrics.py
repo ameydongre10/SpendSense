@@ -18,15 +18,19 @@ Computes canonical portfolio risk and commercial impact metrics:
 """
 
 import logging
+
 from sqlalchemy import text
-from src.database import get_engine, execute_sql
+
+from src.database import execute_sql, get_engine
 
 logger = logging.getLogger(__name__)
 
 
 def compute_and_save_business_metrics(model_recall: float = 0.85) -> dict:
     """Compute top-level business and risk metrics and persist into business_metrics table."""
-    logger.info("Computing business metrics with model recall = %.2f%%...", model_recall * 100)
+    logger.info(
+        "Computing business metrics with model recall = %.2f%%...", model_recall * 100
+    )
 
     # 1. Total fraud volume
     sql_fraud = """
@@ -59,7 +63,9 @@ def compute_and_save_business_metrics(model_recall: float = 0.85) -> dict:
     # Revenue at risk avoided
     revenue_at_risk_avoided = round(total_fraud_amt * active_recall, 2)
     residual_fraud_loss = round(total_fraud_amt * (1.0 - active_recall), 2)
-    fraud_rate_pct = round((fraud_count / total_txns * 100.0), 4) if total_txns > 0 else 0.0
+    fraud_rate_pct = (
+        round((fraud_count / total_txns * 100.0), 4) if total_txns > 0 else 0.0
+    )
 
     # Segments summary
     sql_segments = """
@@ -69,8 +75,16 @@ def compute_and_save_business_metrics(model_recall: float = 0.85) -> dict:
         FROM rfm_segments
     """
     seg_res = execute_sql(sql_segments)
-    total_customers = int(seg_res[0]["total_customers"]) if seg_res and seg_res[0]["total_customers"] else 5000
-    segment_count = int(seg_res[0]["segment_count"]) if seg_res and seg_res[0]["segment_count"] else 6
+    total_customers = (
+        int(seg_res[0]["total_customers"])
+        if seg_res and seg_res[0]["total_customers"]
+        else 5000
+    )
+    segment_count = (
+        int(seg_res[0]["segment_count"])
+        if seg_res and seg_res[0]["segment_count"]
+        else 6
+    )
 
     # Anomalies count
     sql_anom = "SELECT COUNT(*) AS c FROM billing_anomalies WHERE is_anomaly = 1"
@@ -145,8 +159,10 @@ def compute_and_save_business_metrics(model_recall: float = 0.85) -> dict:
                     INSERT INTO business_metrics (metric_name, metric_value, metric_unit, formula, data_source)
                     VALUES (:metric_name, :metric_value, :metric_unit, :formula, :data_source)
                 """),
-                m
+                m,
             )
 
-    logger.info("Persisted %d business metrics to business_metrics table.", len(metrics))
+    logger.info(
+        "Persisted %d business metrics to business_metrics table.", len(metrics)
+    )
     return {m["metric_name"]: m["metric_value"] for m in metrics}

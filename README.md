@@ -4,7 +4,9 @@
 [![Database](https://img.shields.io/badge/Database-PostgreSQL%20%7C%20SQLite-blue.svg)](https://www.postgresql.org/)
 [![ML](https://img.shields.io/badge/ML-XGBoost%20%7C%20Scikit--Learn-orange.svg)](https://xgboost.readthedocs.io/)
 [![Framework](https://img.shields.io/badge/API-FastAPI-green.svg)](https://fastapi.tiangolo.com/)
-[![Tests](https://img.shields.io/badge/Tests-14%20Passed%20(100%25)-brightgreen.svg)](https://pytest.org/)
+[![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-brightgreen.svg)](.github/workflows/ci.yml)
+[![Tests](https://img.shields.io/badge/Tests-19%20Passed%20(100%25)-brightgreen.svg)](https://pytest.org/)
+[![Design](https://img.shields.io/badge/Design-Swiss%20Modernist%20Fintech%20Terminal-00B4D8.svg)](#interactive-editorial-dashboard)
 
 A production-grade payments-network analytics and fraud-risk intelligence system built to mirror the day-to-day work of a **Senior Payments Network Risk & Portfolio Analytics Engineer (applicable to Mastercard, Visa, or global card schemes)**.
 

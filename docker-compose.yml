@@ -1,6 +1,7 @@
-# SpendSense — Docker Compose
-# Provides PostgreSQL for the analytical database.
-# The application code runs on the host; only the database is containerized.
+# SpendSense — Enterprise Multi-Container Production Compose
+# Orchestrates PostgreSQL Analytical DB + SpendSense FastAPI Intelligence Service
+
+version: "3.8"
 
 services:
   postgres:
@@ -21,6 +22,31 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: spendsense_api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-spendsense}
+      POSTGRES_USER: ${POSTGRES_USER:-spendsense_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_use_strong_password}
+      APP_ENV: production
+      LOG_LEVEL: INFO
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
 
 volumes:
   pgdata:

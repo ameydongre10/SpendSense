@@ -7,13 +7,13 @@ Changes to these models require coordinated backend + frontend updates.
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
-
 
 # ── Overview ─────────────────────────────────
 
+
 class OverviewResponse(BaseModel):
     """GET /api/overview — top-level KPIs."""
+
     total_transactions: int
     fraud_count: int
     legitimate_count: int
@@ -32,13 +32,16 @@ class OverviewResponse(BaseModel):
 
 # ── Fraud Trends ─────────────────────────────
 
+
 class FraudTrendPoint(BaseModel):
     """Single data point in the fraud trend time series."""
+
     period: str = Field(description="YYYY-MM format")
     txn_count: int
     fraud_count: int
     fraud_rate_pct: float
     fraud_amount: float
+
 
 class FraudTrendsResponse(BaseModel):
     trends: list[FraudTrendPoint]
@@ -46,64 +49,80 @@ class FraudTrendsResponse(BaseModel):
 
 # ── Fraud Model ──────────────────────────────
 
+
 class ModelMetrics(BaseModel):
     """Evaluation metrics for a single fraud model."""
+
     model_name: str
     precision: float
     recall: float
     f1: float
     auprc: float
-    roc_auc: Optional[float] = None
-    threshold: Optional[float] = None
-    true_positives: Optional[int] = None
-    false_positives: Optional[int] = None
-    true_negatives: Optional[int] = None
-    false_negatives: Optional[int] = None
-    class_imbalance_strategy: Optional[str] = None
-    training_samples: Optional[int] = None
-    test_samples: Optional[int] = None
+    roc_auc: float | None = None
+    threshold: float | None = None
+    true_positives: int | None = None
+    false_positives: int | None = None
+    true_negatives: int | None = None
+    false_negatives: int | None = None
+    class_imbalance_strategy: str | None = None
+    training_samples: int | None = None
+    test_samples: int | None = None
+
 
 class ModelComparisonResponse(BaseModel):
     """GET /api/fraud/model — LR vs XGBoost comparison."""
+
     logistic_regression: ModelMetrics
     xgboost: ModelMetrics
-    pr_curve_lr: list[dict] = Field(default_factory=list, description="[{recall, precision}]")
-    pr_curve_xgb: list[dict] = Field(default_factory=list, description="[{recall, precision}]")
+    pr_curve_lr: list[dict] = Field(
+        default_factory=list, description="[{recall, precision}]"
+    )
+    pr_curve_xgb: list[dict] = Field(
+        default_factory=list, description="[{recall, precision}]"
+    )
     recommendation: str = Field(description="Which model and why")
 
 
 # ── RFM Segments ─────────────────────────────
 
+
 class SegmentDetail(BaseModel):
     """Single customer segment."""
+
     segment_label: str
     customer_count: int
     total_spend: float
     avg_spend: float
     avg_frequency: float
     avg_recency_days: float
-    fraud_rate: Optional[float] = None
+    fraud_rate: float | None = None
     profit_index: float
     revenue_share: float
 
+
 class SegmentsResponse(BaseModel):
     """GET /api/segments — all RFM segments."""
+
     segments: list[SegmentDetail]
     total_customers: int
 
 
 # ── Cohort Analysis ──────────────────────────
 
+
 class CohortRow(BaseModel):
     """Single cell in the cohort retention matrix."""
+
     cohort_month: str
     period_index: int
     customer_count: int
-    retention_rate: Optional[float] = None
-    total_spend: Optional[float] = None
+    retention_rate: float | None = None
+    total_spend: float | None = None
+
 
 class CohortResponse(BaseModel):
     """GET /api/cohorts — cohort retention data."""
+
     cohorts: list[CohortRow]
     cohort_months: list[str]
     max_periods: int
@@ -111,19 +130,23 @@ class CohortResponse(BaseModel):
 
 # ── Profitability ────────────────────────────
 
+
 class ProfitabilityDetail(BaseModel):
     """Profitability data for a single segment."""
+
     segment_label: str
     customer_count: int
     total_spend: float
     avg_spend: float
     avg_frequency: float
-    fraud_rate: Optional[float] = None
+    fraud_rate: float | None = None
     profit_index: float
     revenue_share: float
 
+
 class ProfitabilityResponse(BaseModel):
     """GET /api/profitability — segment profitability."""
+
     segments: list[ProfitabilityDetail]
     methodology_note: str = Field(
         default=(
@@ -136,19 +159,23 @@ class ProfitabilityResponse(BaseModel):
 
 # ── Billing Anomalies ───────────────────────
 
+
 class AnomalyDetail(BaseModel):
     """Single detected billing anomaly."""
+
     anomaly_id: int
     transaction_id: int
-    customer_id: Optional[str] = None
+    customer_id: str | None = None
     amount: float
     anomaly_score: float
     is_anomaly: bool
     detection_method: str
-    reason: Optional[str] = None
+    reason: str | None = None
+
 
 class AnomaliesResponse(BaseModel):
     """GET /api/anomalies — billing anomaly detection results."""
+
     anomalies: list[AnomalyDetail]
     total_anomalies: int
     total_anomalous_amount: float
@@ -156,6 +183,7 @@ class AnomaliesResponse(BaseModel):
 
 
 # ── Spend Analysis ───────────────────────────
+
 
 class SpendByCategory(BaseModel):
     category: str
@@ -165,15 +193,19 @@ class SpendByCategory(BaseModel):
     fraud_count: int
     fraud_rate_pct: float
 
+
 class SpendAnalysisResponse(BaseModel):
     """GET /api/spend — spend breakdown by merchant category."""
+
     categories: list[SpendByCategory]
 
 
 # ── Business Recommendations ─────────────────
 
+
 class Recommendation(BaseModel):
     """Single business recommendation."""
+
     id: int
     title: str
     finding: str
@@ -182,12 +214,15 @@ class Recommendation(BaseModel):
     quantified_impact: str
     priority: str = Field(description="high, medium, low")
 
+
 class RecommendationsResponse(BaseModel):
     """GET /api/recommendations — data-driven recommendations."""
+
     recommendations: list[Recommendation]
 
 
 # ── Health Check ─────────────────────────────
+
 
 class HealthResponse(BaseModel):
     status: str

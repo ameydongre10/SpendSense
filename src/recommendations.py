@@ -12,13 +12,14 @@ Generates the 3 mandatory quantified business recommendations based on actual an
      in real-time before chargebacks occur.
 """
 
-from typing import List, Dict, Any
+from typing import Any
+
 from src.database import execute_sql
 
 
-def generate_business_recommendations() -> List[Dict[str, Any]]:
+def generate_business_recommendations() -> list[dict[str, Any]]:
     """Synthesize findings across models, segments, and anomalies into actionable recommendations."""
-    
+
     # 1. Fetch live metrics
     sql_model = "SELECT model_name, precision_score, recall_score, auprc FROM model_results ORDER BY auprc DESC LIMIT 1"
     model_row = execute_sql(sql_model)
@@ -28,7 +29,9 @@ def generate_business_recommendations() -> List[Dict[str, Any]]:
 
     sql_fraud = "SELECT SUM(CASE WHEN is_fraud = 1 THEN amount ELSE 0 END) AS fraud_vol FROM transactions"
     fraud_vol_row = execute_sql(sql_fraud)
-    fraud_vol = float(fraud_vol_row[0]["fraud_vol"] or 0.0) if fraud_vol_row else 60000.0
+    fraud_vol = (
+        float(fraud_vol_row[0]["fraud_vol"] or 0.0) if fraud_vol_row else 60000.0
+    )
     avoided_dollars = round(fraud_vol * best_recall, 2)
 
     sql_champions = """
@@ -38,7 +41,9 @@ def generate_business_recommendations() -> List[Dict[str, Any]]:
     """
     champ_rows = execute_sql(sql_champions)
     top_spend = sum(float(r["total_spend"]) for r in champ_rows) if champ_rows else 0.0
-    top_share = sum(float(r["revenue_share"]) for r in champ_rows) if champ_rows else 0.0
+    top_share = (
+        sum(float(r["revenue_share"]) for r in champ_rows) if champ_rows else 0.0
+    )
 
     recommendations = [
         {

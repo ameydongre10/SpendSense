@@ -20,10 +20,11 @@ This methodology mirrors how card issuer risk and product teams evaluate portfol
 """
 
 import logging
+
 import pandas as pd
 from sqlalchemy import text
 
-from src.database import get_engine, execute_sql
+from src.database import execute_sql, get_engine
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +69,11 @@ def compute_segment_profitability() -> pd.DataFrame:
         GROUP BY r.segment_label
     """
     fraud_rows = execute_sql(fraud_sql)
-    df_fraud = pd.DataFrame(fraud_rows) if fraud_rows else pd.DataFrame(columns=["segment_label", "fraud_amount", "fraud_rate"])
+    df_fraud = (
+        pd.DataFrame(fraud_rows)
+        if fraud_rows
+        else pd.DataFrame(columns=["segment_label", "fraud_amount", "fraud_rate"])
+    )
 
     if not df_fraud.empty:
         df = df.merge(df_fraud, on="segment_label", how="left")
@@ -86,7 +91,9 @@ def compute_segment_profitability() -> pd.DataFrame:
     df["net_per_customer"] = df["net_contribution"] / df["customer_count"]
 
     # Normalize Profit Index relative to average customer net contribution
-    portfolio_avg_contribution = df["net_contribution"].sum() / df["customer_count"].sum()
+    portfolio_avg_contribution = (
+        df["net_contribution"].sum() / df["customer_count"].sum()
+    )
     df["profit_index"] = (df["net_per_customer"] / portfolio_avg_contribution).round(2)
 
     # Format values
@@ -94,7 +101,11 @@ def compute_segment_profitability() -> pd.DataFrame:
     df["avg_spend"] = df["avg_spend"].round(2)
     df["avg_frequency"] = df["avg_frequency"].round(1)
 
-    logger.info("Profitability computed across %d segments:\n%s", len(df), df[["segment_label", "profit_index", "revenue_share"]])
+    logger.info(
+        "Profitability computed across %d segments:\n%s",
+        len(df),
+        df[["segment_label", "profit_index", "revenue_share"]],
+    )
     return df
 
 
@@ -102,8 +113,14 @@ def save_segment_profitability_to_db(df_prof: pd.DataFrame) -> None:
     """Save computed profitability records into segment_profitability table."""
     engine = get_engine()
     cols = [
-        "segment_label", "customer_count", "total_spend", "avg_spend",
-        "avg_frequency", "fraud_rate", "profit_index", "revenue_share"
+        "segment_label",
+        "customer_count",
+        "total_spend",
+        "avg_spend",
+        "avg_frequency",
+        "fraud_rate",
+        "profit_index",
+        "revenue_share",
     ]
     df_save = df_prof[cols].copy()
 

@@ -1,0 +1,11 @@
+{
+  "mode": "gsd",
+  "workflow": {
+    "auto_advance": true,
+    "atomic_commits": true,
+    "verification_gates": true
+  },
+  "design_archetype": "swiss-modernist-fintech-terminal",
+  "project_name": "SpendSense",
+  "created_at": "2026-11-12T00:24:00+05:30"
+}

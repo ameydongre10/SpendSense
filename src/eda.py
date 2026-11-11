@@ -8,7 +8,7 @@ Provides exploratory data analytics covering:
 """
 
 import logging
-import pandas as pd
+
 from src.database import execute_sql
 
 logger = logging.getLogger(__name__)

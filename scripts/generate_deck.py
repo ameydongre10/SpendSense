@@ -12,24 +12,23 @@ analyst-standard deliverable requirements:
 
 import sys
 from pathlib import Path
+
 from pptx import Presentation
-from pptx.util import Inches, Pt
 from pptx.dml.color import RGBColor
-from pptx.enum.text import PP_ALIGN
 from pptx.enum.shapes import MSO_SHAPE
+from pptx.util import Inches, Pt
 
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from src.database import execute_sql
 
 # SpendSense Global Theme Palette
-C_DARK_NAVY = RGBColor(17, 24, 39)    # #111827
-C_SLATE = RGBColor(30, 41, 59)        # #1e293b
-C_CYAN = RGBColor(0, 163, 224)        # Card Scheme Blue #00a3e0
-C_ACID = RGBColor(213, 255, 0)        # #d5ff00
+C_DARK_NAVY = RGBColor(17, 24, 39)  # #111827
+C_SLATE = RGBColor(30, 41, 59)  # #1e293b
+C_CYAN = RGBColor(0, 163, 224)  # Card Scheme Blue #00a3e0
+C_ACID = RGBColor(213, 255, 0)  # #d5ff00
 C_WHITE = RGBColor(255, 255, 255)
-C_MUTED = RGBColor(156, 163, 175)     # #9ca3af
+C_MUTED = RGBColor(156, 163, 175)  # #9ca3af
 C_CARD_BG = RGBColor(24, 24, 31)
 
 
@@ -48,7 +47,9 @@ def create_deck(output_path: Path):
 
     def add_header(slide, title_text: str, category_text: str):
         # Category Eyebrow
-        tx_box = slide.shapes.add_textbox(Inches(0.8), Inches(0.5), Inches(11.7), Inches(0.4))
+        tx_box = slide.shapes.add_textbox(
+            Inches(0.8), Inches(0.5), Inches(11.7), Inches(0.4)
+        )
         tf = tx_box.text_frame
         tf.word_wrap = True
         p0 = tf.paragraphs[0]
@@ -74,7 +75,7 @@ def create_deck(output_path: Path):
     tb = s1.shapes.add_textbox(Inches(1.0), Inches(1.8), Inches(11.3), Inches(4.0))
     tf = tb.text_frame
     tf.word_wrap = True
-    
+
     p = tf.paragraphs[0]
     p.text = "GLOBAL CARD PAYMENTS NETWORK · RISK & PORTFOLIO INTELLIGENCE"
     p.font.size = Pt(12)
@@ -102,21 +103,36 @@ def create_deck(output_path: Path):
     # ══════════════════════════════════════════════════════════
     s2 = prs.slides.add_slide(blank_layout)
     set_slide_background(s2, C_SLATE)
-    add_header(s2, "Data Foundation & Dual-Track Analytics Methodology", "Data Engineering & Governance")
+    add_header(
+        s2,
+        "Data Foundation & Dual-Track Analytics Methodology",
+        "Data Engineering & Governance",
+    )
 
     # 3 Cards Layout
     cards_data = [
-        ("01. Transaction Stream", "Kaggle European Cardholder dataset (~285K rows, 492 frauds, ~0.17% fraud rate). PCA components V1-V28, Time elapsed, and Amount. Rigorously cleaned and loaded into relational database."),
-        ("02. Customer Enrichment", "Synthetic behavioral attributes generated for 5,000 cardholders: transaction dates across 18 months, merchant categories (Travel, Dining, Retail), and city/state coordinates. Explicitly flagged with is_synthetic=True."),
-        ("03. Unified Pillars", "Dual analytical pillars matching tier-1 card scheme analytics: Risk Modeling (Logistic Regression baseline to XGBoost) and Customer Lifetime Value (RFM segmentation, Cohort analysis, and Profitability index)."),
+        (
+            "01. Transaction Stream",
+            "Kaggle European Cardholder dataset (~285K rows, 492 frauds, ~0.17% fraud rate). PCA components V1-V28, Time elapsed, and Amount. Rigorously cleaned and loaded into relational database.",
+        ),
+        (
+            "02. Customer Enrichment",
+            "Synthetic behavioral attributes generated for 5,000 cardholders: transaction dates across 18 months, merchant categories (Travel, Dining, Retail), and city/state coordinates. Explicitly flagged with is_synthetic=True.",
+        ),
+        (
+            "03. Unified Pillars",
+            "Dual analytical pillars matching tier-1 card scheme analytics: Risk Modeling (Logistic Regression baseline to XGBoost) and Customer Lifetime Value (RFM segmentation, Cohort analysis, and Profitability index).",
+        ),
     ]
     for i, (head, body) in enumerate(cards_data):
         left = Inches(1.0 + i * 3.8)
-        shape = s2.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, Inches(2.2), Inches(3.6), Inches(4.2))
+        shape = s2.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE, left, Inches(2.2), Inches(3.6), Inches(4.2)
+        )
         shape.fill.solid()
         shape.fill.fore_color.rgb = C_CARD_BG
         shape.line.color.rgb = C_CYAN
-        
+
         tf = shape.text_frame
         tf.word_wrap = True
         p = tf.paragraphs[0]
@@ -124,7 +140,7 @@ def create_deck(output_path: Path):
         p.font.size = Pt(16)
         p.font.bold = True
         p.font.color.rgb = C_ACID
-        
+
         p = tf.add_paragraph()
         p.text = f"\n{body}"
         p.font.size = Pt(12)
@@ -135,7 +151,11 @@ def create_deck(output_path: Path):
     # ══════════════════════════════════════════════════════════
     s3 = prs.slides.add_slide(blank_layout)
     set_slide_background(s3, C_DARK_NAVY)
-    add_header(s3, "Fraud Risk Modeling: Precision-Recall Trade-off Under Extreme Imbalance", "Risk Analytics Pillar")
+    add_header(
+        s3,
+        "Fraud Risk Modeling: Precision-Recall Trade-off Under Extreme Imbalance",
+        "Risk Analytics Pillar",
+    )
 
     tb = s3.shapes.add_textbox(Inches(1.0), Inches(2.0), Inches(11.3), Inches(4.8))
     tf = tb.text_frame
@@ -176,7 +196,11 @@ def create_deck(output_path: Path):
     # ══════════════════════════════════════════════════════════
     s4 = prs.slides.add_slide(blank_layout)
     set_slide_background(s4, C_SLATE)
-    add_header(s4, "Customer Segmentation & Lifetime Value Profitability", "Digital & Consumer Services Pillar")
+    add_header(
+        s4,
+        "Customer Segmentation & Lifetime Value Profitability",
+        "Digital & Consumer Services Pillar",
+    )
 
     tb = s4.shapes.add_textbox(Inches(1.0), Inches(2.0), Inches(11.3), Inches(4.8))
     tf = tb.text_frame
@@ -214,29 +238,41 @@ def create_deck(output_path: Path):
     # ══════════════════════════════════════════════════════════
     s5 = prs.slides.add_slide(blank_layout)
     set_slide_background(s5, C_DARK_NAVY)
-    add_header(s5, "Executive Action Items: Three Quantified Recommendations", "Strategic Deliverable")
+    add_header(
+        s5,
+        "Executive Action Items: Three Quantified Recommendations",
+        "Strategic Deliverable",
+    )
 
     recs_data = [
-        ("Recommendation 1: Real-Time XGBoost Scoring",
-         "Finding: Linear baselines create unacceptable false-positive cardholder friction.\n"
-         "Action: Deploy XGBoost in authorization stream with dynamic step-up authentication at 0.50 threshold.\n"
-         "Quantified Impact: Intercepts ~$42,500 in fraud loss with a 64% reduction in false-positive declines."),
-        ("Recommendation 2: VIP Retention & Spend Acceleration",
-         "Finding: Champions and Loyal Spenders represent 92.1% of portfolio interchange revenue.\n"
-         "Action: Introduce targeted spend rewards on top categories (Travel & Dining) and trigger concierge alerts on 21+ day recency gaps.\n"
-         "Quantified Impact: Mitigates an estimated 4.2% annualized churn risk on highest-margin customer tiers."),
-        ("Recommendation 3: Statistical Billing Anomaly Alerting",
-         "Finding: Over 2,000 transactions violate 3.5-sigma category limits or 4x IQR ticket thresholds.\n"
-         "Action: Implement automated velocity screening rules triggering instant cardholder push/SMS validation.\n"
-         "Quantified Impact: Reduces dispute chargeback overhead by 22% and prevents recurring unauthorized billing."),
+        (
+            "Recommendation 1: Real-Time XGBoost Scoring",
+            "Finding: Linear baselines create unacceptable false-positive cardholder friction.\n"
+            "Action: Deploy XGBoost in authorization stream with dynamic step-up authentication at 0.50 threshold.\n"
+            "Quantified Impact: Intercepts ~$42,500 in fraud loss with a 64% reduction in false-positive declines.",
+        ),
+        (
+            "Recommendation 2: VIP Retention & Spend Acceleration",
+            "Finding: Champions and Loyal Spenders represent 92.1% of portfolio interchange revenue.\n"
+            "Action: Introduce targeted spend rewards on top categories (Travel & Dining) and trigger concierge alerts on 21+ day recency gaps.\n"
+            "Quantified Impact: Mitigates an estimated 4.2% annualized churn risk on highest-margin customer tiers.",
+        ),
+        (
+            "Recommendation 3: Statistical Billing Anomaly Alerting",
+            "Finding: Over 2,000 transactions violate 3.5-sigma category limits or 4x IQR ticket thresholds.\n"
+            "Action: Implement automated velocity screening rules triggering instant cardholder push/SMS validation.\n"
+            "Quantified Impact: Reduces dispute chargeback overhead by 22% and prevents recurring unauthorized billing.",
+        ),
     ]
     for i, (head, body) in enumerate(recs_data):
         left = Inches(1.0 + i * 3.8)
-        shape = s5.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, left, Inches(2.2), Inches(3.6), Inches(4.5))
+        shape = s5.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE, left, Inches(2.2), Inches(3.6), Inches(4.5)
+        )
         shape.fill.solid()
         shape.fill.fore_color.rgb = C_CARD_BG
         shape.line.color.rgb = C_ACID
-        
+
         tf = shape.text_frame
         tf.word_wrap = True
         p = tf.paragraphs[0]
@@ -244,7 +280,7 @@ def create_deck(output_path: Path):
         p.font.size = Pt(15)
         p.font.bold = True
         p.font.color.rgb = C_ACID
-        
+
         p = tf.add_paragraph()
         p.text = f"\n{body}"
         p.font.size = Pt(11)
@@ -255,7 +291,9 @@ def create_deck(output_path: Path):
     # ══════════════════════════════════════════════════════════
     s6 = prs.slides.add_slide(blank_layout)
     set_slide_background(s6, C_SLATE)
-    add_header(s6, "Commercial Impact Summary & Implementation Roadmap", "Execution Roadmap")
+    add_header(
+        s6, "Commercial Impact Summary & Implementation Roadmap", "Execution Roadmap"
+    )
 
     tb = s6.shapes.add_textbox(Inches(1.0), Inches(2.0), Inches(11.3), Inches(4.8))
     tf = tb.text_frame
@@ -299,5 +337,9 @@ def create_deck(output_path: Path):
 
 
 if __name__ == "__main__":
-    out_file = Path(__file__).resolve().parent.parent / "deliverables" / "SpendSense_Recommendations.pptx"
+    out_file = (
+        Path(__file__).resolve().parent.parent
+        / "deliverables"
+        / "SpendSense_Recommendations.pptx"
+    )
     create_deck(out_file)
