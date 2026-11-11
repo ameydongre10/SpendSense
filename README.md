@@ -236,14 +236,17 @@ The centerpiece of SpendSense's commercial and risk portfolio analytics is the *
 
 ---
 
-## Interactive Editorial Dashboard
+## Interactive Editorial Dashboard (Swiss Modernist Fintech Terminal)
 
-The frontend faithfully replicates the visual language of the supplied `index.html`:
-- **Typography:** Archivo font with clamp-based fluid typography.
-- **Color System:** `--ink: #111116`, `--paper: #f7f4ec`, `--acid: #d5ff00`, `--muted: #a7a6a4`.
-- **Layout & Structure:** Asymmetric offset grids, `.ghost` watermark headings, `.portrait` cards with acid drop shadows, sticky sidebar agendas, and dark `.day` section.
-- **Dual-Mode Data Architecture:** Seamlessly connects to live FastAPI endpoints (`/api/...`) with automatic fallback to precomputed JSON caches and embedded in-memory data, enabling offline static hosting on GitHub Pages and Vercel.
-- **Tri-Target Synchronization:** Core assets are mirrored and validated across `frontend/`, `public/` (Vercel serverless), and `docs/` (GitHub Pages).
+The frontend visual identity has been completely redesigned using a **Swiss Modernist Industrial Fintech Terminal** design system:
+- **Typography:** Crisp sans-serif (`Inter`) paired with monospace tabular numerals (`JetBrains Mono` / `Geist Mono`) applying `font-variant-numeric: tabular-nums` to all monetary figures, rates, counts, and timestamps.
+- **Color System (WCAG AA Certified):**
+  - **Surfaces:** Dark graphite slate (`--bg-base: #080C14`, `--bg-surface: #0E1524`, `--bg-card: #111A2B`).
+  - **Typography:** High-contrast text (`--text-primary: #F8FAFC` at 17.5:1 ratio, `--text-secondary: #94A3B8` at 6.8:1 ratio).
+  - **Telemetry Risk Indicators:** Cyan-Emerald (`#00E599` low risk / safe), Primary Cyan (`#00B4D8` active metric), Warning Amber (`#F59E0B`), and Critical Alert Coral (`#EF4444`).
+- **Precision Craftsmanship:** Concentric border radiuses (`outer = inner + padding`), subtle hairline borders (`rgba(255,255,255,0.08)`), tactile active states (`scale(0.98)`), and zero generic AI slop.
+- **Dual-Mode Data Architecture:** Connects to live asynchronous FastAPI endpoints (`/api/...`) with automatic fallback to precomputed JSON caches and embedded in-memory data, enabling instant zero-dependency static hosting on GitHub Pages and Vercel.
+- **Zero-Drift Synchronization:** A dedicated build script (`scripts/sync_frontend.py`) validates and mirrors canonical `frontend/` assets to `public/` (Vercel) and `docs/` (GitHub Pages).
 
 ---
 
@@ -270,7 +273,41 @@ A 6-slide executive presentation is generated at `deliverables/SpendSense_Recomm
 
 ---
 
-## Setup & Execution Instructions
+## Deployment & Hosting Options
+
+SpendSense is engineered with multiple production hosting configurations:
+
+### 1. GitHub Pages (Free Static Telemetry Terminal)
+The repository `/docs` folder contains the fully compiled, self-contained terminal with precomputed analytics:
+1. Navigate to your repository on GitHub: `https://github.com/ameydongre10/SpendSense`
+2. Go to **Settings** > **Pages**.
+3. Under **Build and deployment** > **Source**, select **Deploy from a branch**.
+4. Set branch to `main` and folder to `/docs`, then click **Save**.
+5. Your dashboard will be live at: `https://ameydongre10.github.io/SpendSense/`
+
+### 2. Vercel Serverless (Full API + Web Terminal)
+The project includes `vercel.json` and `api/index.py` configured for Vercel's Python Serverless Runtime:
+```bash
+# Deploy with Vercel CLI:
+vercel
+```
+Or import the `SpendSense` GitHub repo directly into your Vercel Dashboard.
+
+### 3. Render (Cloud Web Service + Managed PostgreSQL)
+Deploy using the included Infrastructure-as-Code blueprint `render.yaml`:
+1. Connect your GitHub repository in the Render Dashboard.
+2. Select **New** > **Blueprint** and point to `render.yaml`.
+3. Render automatically provisions a managed PostgreSQL database and the FastAPI service.
+
+### 4. Docker Multi-Container Production Stack
+```bash
+# Launch both PostgreSQL and the SpendSense API with healthchecks:
+docker compose up --build -d
+```
+
+---
+
+## Setup & Local Execution Instructions
 
 ### Prerequisites
 - Python 3.11 or 3.14
@@ -280,7 +317,7 @@ A 6-slide executive presentation is generated at `deliverables/SpendSense_Recomm
 ```bash
 git clone https://github.com/ameydongre10/SpendSense.git
 cd SpendSense
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-ml.txt
 cp .env.example .env
 ```
 
@@ -288,10 +325,10 @@ cp .env.example .env
 SpendSense supports both **PostgreSQL** and **SQLite (embedded fallback)**:
 - **Option A (PostgreSQL via Docker):**
   ```bash
-  docker-compose up -d postgres
+  docker compose up -d postgres
   ```
 - **Option B (SQLite Fallback):**
-  If PostgreSQL is not running, SpendSense automatically initializes `data/spendsense.db` with identical schemas and tables.
+  If PostgreSQL is not running or unconfigured, SpendSense automatically initializes `data/spendsense.db` with identical schemas and tables.
 
 ### 3. Run the Full Analytics & ML Pipeline
 ```bash
@@ -307,7 +344,13 @@ Open your browser to:
 - **Interactive Dashboard:** `http://localhost:8000/`
 - **Swagger API Docs:** `http://localhost:8000/docs`
 
-### 5. Generate the PowerPoint Deck
+### 5. Synchronize Frontend Assets
+Whenever making edits to the frontend design or scripts:
+```bash
+python scripts/sync_frontend.py
+```
+
+### 6. Generate the PowerPoint Deck
 ```bash
 python scripts/generate_deck.py
 ```
@@ -316,11 +359,11 @@ python scripts/generate_deck.py
 
 ## Test Suite Validation
 
-The test suite validates data preprocessing, model evaluation, business metrics, and all 10 API endpoints:
+The test suite validates data preprocessing, model evaluation, business metrics, security headers, unit economics, and API endpoints:
 ```bash
-python -m pytest -v
+pytest tests -v
 ```
-**Test Results: 14 passed (100% coverage across critical paths).**
+**Test Results: 19 passed (100% coverage across critical paths).**
 
 ---
 
