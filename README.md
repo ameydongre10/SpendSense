@@ -18,8 +18,7 @@ SpendSense bridges the gap between **technical analytics rigor** (PostgreSQL, Py
 
 ## 🌐 Live Interactive Deployments
 
-- **Live Production Terminal (GitHub Pages):** [https://ameydongre10.github.io/SpendSense/](https://ameydongre10.github.io/SpendSense/)
-- **Executive Board Deck (.pptx):** [Download SpendSense_Recommendations.pptx](deliverables/SpendSense_Recommendations.pptx)
+- **Live Production Terminal (GitHub Pages):** https://spend-sense-mc74dbjsg-ameydongre2005-4041s-projects.vercel.app/
 - **API Spec & Interactive Playground:** Accessible directly inside the live terminal or at `/api/docs` under local execution.
 
 ---
