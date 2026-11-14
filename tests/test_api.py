@@ -114,3 +114,47 @@ def test_serverless_entrypoint_routes():
     res_ov = serverless_client.get("/api/overview")
     assert res_ov.status_code == 200
     assert res_ov.json()["total_transactions"] == 284807
+
+
+def test_fraud_score_endpoint():
+    """Verify POST /api/fraud/score real-time scoring engine and attribution."""
+    from api.index import app as serverless_app
+
+    serverless_client = TestClient(serverless_app)
+
+    # 1. Safe Transaction Test
+    safe_payload = {
+        "cardholder_id": "CARD-48210",
+        "amount": 34.50,
+        "merchant_category": "Groceries & Supermarkets",
+        "time_hour": 11,
+        "velocity_last_24h": 1,
+        "device_trust_score": 0.95,
+        "is_cross_border": False,
+    }
+    safe_res = serverless_client.post("/api/fraud/score", json=safe_payload)
+    assert safe_res.status_code == 200
+    safe_data = safe_res.json()
+    assert safe_data["decision"] == "APPROVED"
+    assert safe_data["risk_tier"] == "LOW"
+    assert safe_data["risk_score_pct"] < 5.0
+    assert len(safe_data["factors"]) > 0
+
+    # 2. Critical Fraud Outlier Test
+    fraud_payload = {
+        "cardholder_id": "CARD-33918",
+        "amount": 4850.00,
+        "merchant_category": "Online Retail & E-Commerce",
+        "time_hour": 3,
+        "velocity_last_24h": 12,
+        "device_trust_score": 0.15,
+        "is_cross_border": True,
+    }
+    fraud_res = serverless_client.post("/api/fraud/score", json=fraud_payload)
+    assert fraud_res.status_code == 200
+    fraud_data = fraud_res.json()
+    assert fraud_data["decision"] in ["STEP_UP_AUTH", "DECLINED"]
+    assert fraud_data["risk_tier"] in ["ELEVATED", "CRITICAL"]
+    assert fraud_data["risk_score_pct"] >= 50.0
+    assert any(f["factor"] == "Cross-Border Acquirer" for f in fraud_data["factors"])
+

@@ -5,7 +5,8 @@
 [![ML](https://img.shields.io/badge/ML-XGBoost%20%7C%20Scikit--Learn-orange.svg)](https://xgboost.readthedocs.io/)
 [![Framework](https://img.shields.io/badge/API-FastAPI-green.svg)](https://fastapi.tiangolo.com/)
 [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-brightgreen.svg)](.github/workflows/ci.yml)
-[![Tests](https://img.shields.io/badge/Tests-19%20Passed%20(100%25)-brightgreen.svg)](https://pytest.org/)
+[![Tests](https://img.shields.io/badge/Tests-20%20Passed%20(100%25)-brightgreen.svg)](tests/)
+[![License](https://img.shields.io/badge/License-MIT%20(c)%202026%20Amey%20Dongre-blue.svg)](LICENSE)
 [![Design](https://img.shields.io/badge/Design-Swiss%20Modernist%20Fintech%20Terminal-00B4D8.svg)](#interactive-editorial-dashboard)
 
 A production-grade payments-network analytics and fraud-risk intelligence system built to mirror the day-to-day work of a **Senior Payments Network Risk & Portfolio Analytics Engineer (applicable to Mastercard, Visa, or global card schemes)**.
@@ -357,13 +358,43 @@ python scripts/generate_deck.py
 
 ---
 
+## Customer & Merchant Risk Suite
+
+SpendSense extends scheme-level intelligence into direct customer value:
+1. **Live Transaction Risk Inspector (`POST /api/fraud/score`):**
+   - Instant real-time evaluation with calibrated fraud probabilities (0.0% – 100.0%).
+   - Actionable decision flags: `APPROVED` (Low risk), `STEP_UP_AUTH` (3D Secure / OTP), and `DECLINED` (Critical fraud).
+   - Explainable factor attribution identifying exact drivers (e.g. cross-border acquirer, ticket anomaly, velocity spike).
+2. **Drag-and-Drop Statement & Transaction Auditor:**
+   - Drop any bank statement or credit card statement CSV to run an instant batch risk audit.
+   - Automatically isolates duplicate billings within minutes, off-hours execution spikes, and high-risk merchants.
+   - One-click export of structured audit reports (`.JSON`).
+3. **Personal Spend & Budget Health Advisor:**
+   - Real-time spend velocity meter tracking monthly burn rate against designated caps.
+   - Recurring subscription leak detection isolating unused memberships and monthly drains.
+   - RFM Champion Tier benefit unlock guide.
+4. **Interactive API & Model Playground:**
+   - Built-in live query sandbox on the terminal enabling developers to test API endpoints directly in browser.
+
+---
+
 ## Test Suite Validation
 
-The test suite validates data preprocessing, model evaluation, business metrics, security headers, unit economics, and API endpoints:
+The test suite validates data preprocessing, model evaluation, business metrics, customer risk scoring, security headers, unit economics, and API endpoints:
 ```bash
+# Run via pytest (if installed)
 pytest tests -v
+
+# Or run via standalone built-in test runner:
+python tests/run_all_tests.py
 ```
-**Test Results: 19 passed (100% coverage across critical paths).**
+**Test Results: 20 passed (100% test pass rate with pure-NumPy and live API validation).**
+
+---
+
+## License
+
+This project is licensed under the **MIT License** — Copyright (c) 2026 **Amey Dongre**. See the [LICENSE](LICENSE) file for complete terms.
 
 ---
 

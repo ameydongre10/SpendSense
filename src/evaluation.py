@@ -18,12 +18,73 @@ import logging
 from typing import Any
 
 import numpy as np
-from sklearn.metrics import (
-    average_precision_score,
-    confusion_matrix,
-    precision_recall_curve,
-    roc_auc_score,
-)
+
+try:
+    from sklearn.metrics import (
+        average_precision_score,
+        confusion_matrix,
+        precision_recall_curve,
+        roc_auc_score,
+    )
+    HAS_SKLEARN = True
+except ImportError:
+    HAS_SKLEARN = False
+
+    def confusion_matrix(y_true, y_pred):
+        y_true = np.asarray(y_true).astype(int)
+        y_pred = np.asarray(y_pred).astype(int)
+        tn = int(np.sum((y_true == 0) & (y_pred == 0)))
+        fp = int(np.sum((y_true == 0) & (y_pred == 1)))
+        fn = int(np.sum((y_true == 1) & (y_pred == 0)))
+        tp = int(np.sum((y_true == 1) & (y_pred == 1)))
+        return np.array([[tn, fp], [fn, tp]])
+
+    def precision_recall_curve(y_true, y_pred_proba):
+        y_true = np.asarray(y_true).astype(int)
+        y_prob = np.asarray(y_pred_proba)
+        thresholds = np.sort(np.unique(y_prob))
+        precisions = []
+        recalls = []
+        n_pos = np.sum(y_true == 1)
+        if n_pos == 0:
+            return np.array([1.0, 0.0]), np.array([0.0, 0.0]), np.array([0.5])
+
+        for t in thresholds:
+            y_pred = (y_prob >= t).astype(int)
+            tp = np.sum((y_true == 1) & (y_pred == 1))
+            fp = np.sum((y_true == 0) & (y_pred == 1))
+            prec = tp / max(tp + fp, 1)
+            rec = tp / n_pos
+            precisions.append(prec)
+            recalls.append(rec)
+
+        precisions.append(1.0)
+        recalls.append(0.0)
+        return np.array(precisions), np.array(recalls), thresholds
+
+    def average_precision_score(y_true, y_pred_proba):
+        p, r, _ = precision_recall_curve(y_true, y_pred_proba)
+        sorted_indices = np.argsort(r)
+        p_sorted = p[sorted_indices]
+        r_sorted = r[sorted_indices]
+        # NumPy 2.0+ compatibility (trapezoid replaced trapz)
+        if hasattr(np, "trapezoid"):
+            return float(np.trapezoid(p_sorted, r_sorted))
+        elif hasattr(np, "trapz"):
+            return float(np.trapz(p_sorted, r_sorted))
+        return float(np.sum((p_sorted[:-1] + p_sorted[1:]) * np.diff(r_sorted)) / 2.0)
+
+    def roc_auc_score(y_true, y_pred_proba):
+        y_true = np.asarray(y_true).astype(int)
+        y_prob = np.asarray(y_pred_proba)
+        n_pos = np.sum(y_true == 1)
+        n_neg = np.sum(y_true == 0)
+        if n_pos == 0 or n_neg == 0:
+            return 0.5
+        rank = np.argsort(np.argsort(y_prob)) + 1
+        pos_ranks = rank[y_true == 1]
+        u = np.sum(pos_ranks) - n_pos * (n_pos + 1) / 2
+        return float(u / (n_pos * n_neg))
 
 logger = logging.getLogger(__name__)
 

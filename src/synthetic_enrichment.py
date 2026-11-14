@@ -18,10 +18,9 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
-from sqlalchemy import text
 
 from src.config import Config
-from src.database import get_engine
+from src.database import get_engine, text
 
 logger = logging.getLogger(__name__)
 

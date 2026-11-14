@@ -7,7 +7,9 @@ Path-Resilient FastAPI service supporting both direct and rewritten Vercel route
 Guarantees 100% route matching regardless of Vercel internal rewrite behavior.
 """
 
+from datetime import datetime, timezone
 import json
+import math
 import os
 import time
 import uuid
@@ -16,6 +18,7 @@ from typing import Any
 
 from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
 
 # Base Directory
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -253,6 +256,162 @@ async def get_fraud_model():
         "pr_curve_lr": [],
         "pr_curve_xgb": [],
         "recommendation": "Deploy XGBoost: cuts false-positive alerts by 64% while maintaining 98.98% recall.",
+    }
+
+
+class ScoreRequest(BaseModel):
+    cardholder_id: str = "CARD-89241"
+    amount: float = 120.50
+    merchant_category: str = "Online Retail & E-Commerce"
+    time_hour: int = 14
+    is_cross_border: bool = False
+    velocity_last_24h: int = 2
+    device_trust_score: float = 0.95
+
+
+CATEGORY_BENCHMARKS = {
+    "Online Retail & E-Commerce": {"avg_ticket": 88.46, "base_logit": 0.5},
+    "Travel & Airlines": {"avg_ticket": 127.30, "base_logit": 0.4},
+    "Entertainment & Media": {"avg_ticket": 109.77, "base_logit": 0.0},
+    "Dining & Restaurants": {"avg_ticket": 72.84, "base_logit": -0.2},
+    "Fuel & Transportation": {"avg_ticket": 169.45, "base_logit": -0.4},
+    "Groceries & Supermarkets": {"avg_ticket": 50.94, "base_logit": -0.7},
+}
+
+
+@router.post("/fraud/score")
+async def score_transaction(req: ScoreRequest):
+    benchmark = CATEGORY_BENCHMARKS.get(
+        req.merchant_category, {"avg_ticket": 85.0, "base_logit": 0.0}
+    )
+
+    logit = -4.5
+    factors = []
+
+    cat_logit = benchmark["base_logit"]
+    logit += cat_logit
+    factors.append({
+        "factor": "Merchant Category Risk",
+        "impact": "medium" if cat_logit >= 0.4 else ("safe" if cat_logit < 0 else "low"),
+        "description": f"Category '{req.merchant_category}' statistical profile.",
+        "weight": round(cat_logit, 2),
+    })
+
+    ratio = req.amount / max(benchmark["avg_ticket"], 1.0)
+    if ratio >= 8.0:
+        logit += 1.9
+        factors.append({
+            "factor": "Ticket Amount Anomaly",
+            "impact": "high",
+            "description": f"Spend of ${req.amount:,.2f} is {ratio:.1f}x higher than category benchmark (${benchmark['avg_ticket']:.2f}).",
+            "weight": 1.9,
+        })
+    elif ratio >= 3.5:
+        logit += 0.95
+        factors.append({
+            "factor": "Ticket Amount Outlier",
+            "impact": "medium",
+            "description": f"Spend of ${req.amount:,.2f} exceeds category benchmark by {ratio:.1f}x.",
+            "weight": 0.95,
+        })
+    elif ratio <= 1.2:
+        logit += -0.4
+        factors.append({
+            "factor": "Ticket Amount Benchmark",
+            "impact": "safe",
+            "description": f"Spend of ${req.amount:,.2f} matches normal range.",
+            "weight": -0.4,
+        })
+
+    if req.is_cross_border:
+        logit += 1.3
+        factors.append({
+            "factor": "Cross-Border Acquirer",
+            "impact": "high",
+            "description": "International foreign card routing.",
+            "weight": 1.3,
+        })
+    else:
+        logit += -0.2
+        factors.append({
+            "factor": "Domestic Routing",
+            "impact": "safe",
+            "description": "Domestic issuing jurisdiction.",
+            "weight": -0.2,
+        })
+
+    if req.velocity_last_24h >= 8:
+        logit += 1.6
+        factors.append({
+            "factor": "Velocity Surge Spike",
+            "impact": "high",
+            "description": f"{req.velocity_last_24h} transactions authorized within 24 hours.",
+            "weight": 1.6,
+        })
+    elif req.velocity_last_24h >= 4:
+        logit += 0.7
+        factors.append({
+            "factor": "Elevated Velocity",
+            "impact": "medium",
+            "description": f"{req.velocity_last_24h} transactions in 24 hours.",
+            "weight": 0.7,
+        })
+
+    if 1 <= req.time_hour <= 4:
+        logit += 0.75
+        factors.append({
+            "factor": "Off-Hours Execution Window",
+            "impact": "medium",
+            "description": f"Authorization at high-risk hour ({req.time_hour:02d}:00 hours).",
+            "weight": 0.75,
+        })
+
+    if req.device_trust_score <= 0.35:
+        logit += 1.7
+        factors.append({
+            "factor": "Untrusted Device Fingerprint",
+            "impact": "high",
+            "description": f"Unrecognized client hardware fingerprint (Trust Index: {req.device_trust_score:.2f}).",
+            "weight": 1.7,
+        })
+    elif req.device_trust_score >= 0.90:
+        logit += -0.6
+        factors.append({
+            "factor": "Verified Known Device",
+            "impact": "safe",
+            "description": f"Established consistent device fingerprint (Trust Index: {req.device_trust_score:.2f}).",
+            "weight": -0.6,
+        })
+
+    prob = 1.0 / (1.0 + math.exp(-logit))
+    risk_pct = round(prob * 100.0, 2)
+
+    if risk_pct >= 60.0:
+        decision = "DECLINED"
+        risk_tier = "CRITICAL"
+        rationale = "High probability of fraudulent unauthorized chargeback. Immediate authorization decline."
+        action = "Decline authorization and trigger instant cardholder SMS/push verification alert."
+    elif risk_pct >= 22.0:
+        decision = "STEP_UP_AUTH"
+        risk_tier = "ELEVATED" if risk_pct >= 40.0 else "MODERATE"
+        rationale = "Moderate risk exposure detected. Frictionless checkout suspended pending cardholder authentication."
+        action = "Step-up challenge: Require 3D Secure 2.0 biometric or one-time passcode (OTP)."
+    else:
+        decision = "APPROVED"
+        risk_tier = "LOW"
+        rationale = "Transaction conforms to verified legitimate cardholder behavior. Frictionless approval granted."
+        action = "Instant authorization passed. Settle transaction seamlessly."
+
+    return {
+        "transaction_id": f"TXN-{uuid.uuid4().hex[:8].upper()}",
+        "risk_score_pct": risk_pct,
+        "decision": decision,
+        "decision_rationale": rationale,
+        "risk_tier": risk_tier,
+        "factors": factors,
+        "recommended_action": action,
+        "evaluated_at": datetime.now(timezone.utc).isoformat(),
+        "engine": "SpendSense Calibrated Risk Engine v2.0 (Serverless)",
     }
 
 

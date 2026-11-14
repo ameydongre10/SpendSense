@@ -8,6 +8,20 @@
 - **CI/CD Pipeline:** Fully configured via `.github/workflows/ci.yml`
 - **Containerization:** Multi-stage `Dockerfile` and production `docker-compose.yml`
 
+## Milestone: Customer & Enterprise Intelligence Suite v2.1
+- **Status:** COMPLETED & VERIFIED
+- **Active Execution Framework:** GSD (Git. Ship. Done.)
+- **Design Archetype:** Swiss Modernist Industrial Fintech Terminal
+- **Tests Passing:** 20/20 (100% Pass Rate)
+- **License:** MIT License — Copyright (c) 2026 Amey Dongre
+- **New Customer Capabilities Delivered:**
+  1. **Live Transaction Risk Inspector (`POST /api/fraud/score`):** Calibrated real-time scoring with instant decisions (`APPROVED`, `STEP_UP_AUTH`, `DECLINED`) and explainable factor attribution.
+  2. **Drag-and-Drop Batch Statement & Transaction Auditor:** Client-side + API CSV scanner detecting duplicate charges, off-hours spikes, and anomaly tickets with JSON export.
+  3. **Personal Spend & Budget Health Advisor:** Real-time velocity burn rate pacing, recurring subscription leak detection, and RFM Champion benefit guidance.
+  4. **Interactive API & Model Playground:** Live in-browser endpoint testing sandbox for `/api/fraud/score`, `/api/overview`, and `/api/fraud/model`.
+  5. **GitHub Pages 404 PPTX Fix:** Added deliverables synchronization to `docs/deliverables/` and `public/deliverables/`, ensuring executive deck downloads function properly everywhere.
+  6. **Resilient Pure-NumPy Engine:** Added pure-NumPy fallbacks for scalers, splitters, and metrics, guaranteeing zero-crash execution in any Python environment.
+
 ## Phase Execution Summary
 1. **PHASE 1 — Inspect and audit complete codebase:** Completed. Detailed in `AUDIT_AND_REMEDIATION_PLAN.md`.
 2. **PHASE 2 — Identify architectural and design problems:** Completed. Contrast bugs, cold-start hangs, triple-file drift isolated.

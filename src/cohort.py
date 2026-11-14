@@ -14,9 +14,8 @@ Provides actionable insight into customer lifetime value decay and retention vel
 import logging
 
 import pandas as pd
-from sqlalchemy import text
 
-from src.database import execute_sql, get_engine
+from src.database import execute_sql, get_engine, text
 
 logger = logging.getLogger(__name__)
 

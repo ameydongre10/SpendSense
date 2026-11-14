@@ -11,25 +11,41 @@ import os
 from collections.abc import Generator
 from contextlib import contextmanager
 
-from sqlalchemy import create_engine, event, text
-from sqlalchemy.engine import Connection, Engine
-from sqlalchemy.orm import Session, sessionmaker
+try:
+    from sqlalchemy import create_engine, event, text
+    from sqlalchemy.engine import Connection, Engine
+    from sqlalchemy.orm import Session, sessionmaker
+    HAS_SQLALCHEMY = True
+except ImportError:
+    HAS_SQLALCHEMY = False
+    create_engine = None
+    event = None
+    Engine = None
+    Connection = None
+    Session = None
+    sessionmaker = None
+
+    def text(s):  # type: ignore
+        return s
+
+from typing import Any
 
 from src.config import Config
 
 logger = logging.getLogger(__name__)
 
-_engine: Engine | None = None
+_engine: Any = None
 _is_sqlite: bool = False
 
 
-@event.listens_for(Engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
-    """Enforce foreign key constraints when using SQLite."""
-    if _is_sqlite:
-        cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA foreign_keys=ON")
-        cursor.close()
+if HAS_SQLALCHEMY and event and Engine:
+    @event.listens_for(Engine, "connect")
+    def set_sqlite_pragma(dbapi_connection, connection_record):
+        """Enforce foreign key constraints when using SQLite."""
+        if _is_sqlite:
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA foreign_keys=ON")
+            cursor.close()
 
 
 def is_sqlite() -> bool:
@@ -37,13 +53,16 @@ def is_sqlite() -> bool:
     return _is_sqlite
 
 
-def get_engine() -> Engine:
+def get_engine() -> Any:
     """Return a singleton SQLAlchemy engine.
 
     Attempts PostgreSQL connection first. If unreachable or not configured,
     falls back to SQLite at data/spendsense.db.
     """
     global _engine, _is_sqlite
+    if not HAS_SQLALCHEMY:
+        raise RuntimeError("SQLAlchemy is not installed.")
+
     if _engine is not None:
         return _engine
 
@@ -97,7 +116,7 @@ def get_engine() -> Engine:
 
 
 @contextmanager
-def get_connection() -> Generator[Connection, None, None]:
+def get_connection() -> Generator[Any, None, None]:
     """Yield a raw DB connection for SQL execution."""
     engine = get_engine()
     with engine.connect() as conn:
@@ -105,7 +124,7 @@ def get_connection() -> Generator[Connection, None, None]:
 
 
 @contextmanager
-def get_session() -> Generator[Session, None, None]:
+def get_session() -> Generator[Any, None, None]:
     """Yield an ORM session with automatic commit/rollback."""
     engine = get_engine()
     session_factory = sessionmaker(bind=engine)
@@ -122,6 +141,8 @@ def get_session() -> Generator[Session, None, None]:
 
 def execute_sql(sql: str, params: dict | None = None) -> list[dict]:
     """Execute a parameterized SQL query and return results as dicts."""
+    if not HAS_SQLALCHEMY:
+        return []
     with get_connection() as conn:
         result = conn.execute(text(sql), params or {})
         if result.returns_rows:
@@ -133,6 +154,9 @@ def execute_sql(sql: str, params: dict | None = None) -> list[dict]:
 
 def init_db() -> None:
     """Initialize tables according to active engine (PostgreSQL or SQLite)."""
+    if not HAS_SQLALCHEMY:
+        logger.info("SQLAlchemy not installed; skipping init_db.")
+        return
     engine = get_engine()
     with engine.begin() as conn:
         if _is_sqlite:
@@ -301,6 +325,8 @@ def init_db() -> None:
 
 def check_connection() -> bool:
     """Verify database connectivity."""
+    if not HAS_SQLALCHEMY:
+        return False
     try:
         with get_connection() as conn:
             conn.execute(text("SELECT 1"))
@@ -312,7 +338,12 @@ def check_connection() -> bool:
 
 def get_table_count(table: str) -> int:
     """Return the row count for a given table."""
-    with get_connection() as conn:
-        r = conn.execute(text(f"SELECT COUNT(*) AS cnt FROM {table}"))
-        row = r.fetchone()
-        return row[0] if row else 0
+    if not HAS_SQLALCHEMY:
+        return 0
+    try:
+        with get_connection() as conn:
+            r = conn.execute(text(f"SELECT COUNT(*) AS cnt FROM {table}"))
+            row = r.fetchone()
+            return row[0] if row else 0
+    except Exception:
+        return 0

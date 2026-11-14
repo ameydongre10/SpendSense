@@ -13,14 +13,21 @@ import json
 import logging
 from typing import Any
 
-import joblib
 import numpy as np
-import xgboost as xgb
-from sklearn.linear_model import LogisticRegression
-from sqlalchemy import text
+
+try:
+    import joblib
+    import xgboost as xgb
+    from sklearn.linear_model import LogisticRegression
+    HAS_ML = True
+except ImportError:
+    HAS_ML = False
+    joblib = None
+    xgb = None
+    LogisticRegression = None
 
 from src.config import Config
-from src.database import get_engine
+from src.database import get_engine, text
 from src.evaluation import evaluate_classifier_performance
 from src.preprocessing import (
     get_stratified_train_test_split,

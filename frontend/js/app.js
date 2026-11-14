@@ -174,13 +174,31 @@ class SpendSenseApp {
     console.log("[SpendSense] Initializing Swiss Modernist Terminal...");
     await this.fetchLiveTelemetry();
     this.setupNavigation();
+    this.setupViewTabs();
     this.setupSimulator();
     this.setupPillars();
     this.setupRecommendations();
+    this.setupCustomerSuite();
+    this.setupBatchAuditor();
+    this.setupApiPlayground();
+    this.setupDeckPreview();
     this.renderInitialViews();
   }
 
   async fetchLiveTelemetry() {
+    // Detect GitHub Pages / Static Hosting
+    if (window.location.hostname.includes("github.io") || window.location.protocol === "file:") {
+      const statusEl = document.getElementById("header-engine-status");
+      if (statusEl) statusEl.textContent = "GitHub Pages (Verified Edge Engine)";
+      const apiDocsLink = document.getElementById("api-docs-nav-link");
+      if (apiDocsLink) {
+        apiDocsLink.href = "#api-playground";
+        apiDocsLink.target = "_self";
+        apiDocsLink.textContent = "API Playground ⚡";
+      }
+      return;
+    }
+
     try {
       const res = await fetch("/api/health");
       if (res.ok) {
@@ -203,6 +221,626 @@ class SpendSenseApp {
         btn.classList.add("active");
       });
     });
+  }
+
+  setupViewTabs() {
+    const tabs = document.querySelectorAll(".view-tab-btn");
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => {
+        tabs.forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        const targetId = tab.dataset.target;
+        const targetEl = document.getElementById(targetId);
+        if (targetEl) {
+          targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    });
+  }
+
+  setupCustomerSuite() {
+    const hourInput = document.getElementById("inp-hour");
+    const hourVal = document.getElementById("inp-hour-val");
+    if (hourInput && hourVal) {
+      hourInput.addEventListener("input", (e) => {
+        hourVal.textContent = `${String(e.target.value).padStart(2, "0")}:00`;
+      });
+    }
+
+    const trustInput = document.getElementById("inp-trust");
+    const trustVal = document.getElementById("inp-trust-val");
+    if (trustInput && trustVal) {
+      trustInput.addEventListener("input", (e) => {
+        trustVal.textContent = `${Math.round(e.target.value * 100)}%`;
+      });
+    }
+
+    // Presets
+    const setPreset = (cardholder, amount, category, hour, velocity, trust, crossBorder) => {
+      document.getElementById("inp-cardholder").value = cardholder;
+      document.getElementById("inp-amount").value = amount;
+      document.getElementById("inp-category").value = category;
+      document.getElementById("inp-hour").value = hour;
+      if (hourVal) hourVal.textContent = `${String(hour).padStart(2, "0")}:00`;
+      document.getElementById("inp-velocity").value = velocity;
+      document.getElementById("inp-trust").value = trust;
+      if (trustVal) trustVal.textContent = `${Math.round(trust * 100)}%`;
+      document.getElementById("inp-cross-border").checked = crossBorder;
+      this.runInspection();
+    };
+
+    const pGrocery = document.getElementById("preset-grocery");
+    if (pGrocery) pGrocery.addEventListener("click", () => setPreset("CARD-48210", 34.50, "Groceries & Supermarkets", 11, 1, 0.95, false));
+
+    const pTravel = document.getElementById("preset-travel");
+    if (pTravel) pTravel.addEventListener("click", () => setPreset("CARD-91024", 2450.00, "Travel & Airlines", 15, 6, 0.85, true));
+
+    const pFraud = document.getElementById("preset-fraud");
+    if (pFraud) pFraud.addEventListener("click", () => setPreset("CARD-33918", 4850.00, "Online Retail & E-Commerce", 3, 12, 0.20, true));
+
+    const pDining = document.getElementById("preset-dining");
+    if (pDining) pDining.addEventListener("click", () => setPreset("CARD-77102", 145.00, "Dining & Restaurants", 20, 2, 0.95, false));
+
+    const runBtn = document.getElementById("btn-run-inspection");
+    if (runBtn) runBtn.addEventListener("click", () => this.runInspection());
+
+    const resetBtn = document.getElementById("btn-reset-inspection");
+    if (resetBtn) resetBtn.addEventListener("click", () => {
+      setPreset("CARD-89241", 120.50, "Online Retail & E-Commerce", 14, 2, 0.95, false);
+    });
+
+    // Run initial inspection with default values
+    this.runInspection();
+  }
+
+  async runInspection() {
+    const cardholder = document.getElementById("inp-cardholder")?.value || "CARD-89241";
+    const amount = parseFloat(document.getElementById("inp-amount")?.value || "120.50");
+    const category = document.getElementById("inp-category")?.value || "Online Retail & E-Commerce";
+    const hour = parseInt(document.getElementById("inp-hour")?.value || "14", 10);
+    const velocity = parseInt(document.getElementById("inp-velocity")?.value || "2", 10);
+    const trust = parseFloat(document.getElementById("inp-trust")?.value || "0.95");
+    const crossBorder = document.getElementById("inp-cross-border")?.checked || false;
+
+    const reqPayload = {
+      cardholder_id: cardholder,
+      amount: amount,
+      merchant_category: category,
+      time_hour: hour,
+      velocity_last_24h: velocity,
+      device_trust_score: trust,
+      is_cross_border: crossBorder
+    };
+
+    let result = null;
+
+    // Attempt live API if available and not on static host
+    if (!window.location.hostname.includes("github.io") && window.location.protocol !== "file:") {
+      try {
+        const res = await fetch("/api/fraud/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(reqPayload)
+        });
+        if (res.ok) {
+          result = await res.json();
+        }
+      } catch (e) {
+        // Fallback to client engine
+      }
+    }
+
+    if (!result) {
+      result = this.calculateRisk(reqPayload);
+    }
+
+    this.renderInspectionResult(result);
+  }
+
+  calculateRisk(req) {
+    const benchmarks = {
+      "Online Retail & E-Commerce": { avg: 88.46, logit: 0.5 },
+      "Travel & Airlines": { avg: 127.30, logit: 0.4 },
+      "Entertainment & Media": { avg: 109.77, logit: 0.0 },
+      "Dining & Restaurants": { avg: 72.84, logit: -0.2 },
+      "Fuel & Transportation": { avg: 169.45, logit: -0.4 },
+      "Groceries & Supermarkets": { avg: 50.94, logit: -0.7 }
+    };
+
+    const b = benchmarks[req.merchant_category] || { avg: 85.0, logit: 0.0 };
+    let logit = -4.5;
+    const factors = [];
+
+    // Category
+    logit += b.logit;
+    factors.push({
+      factor: "Merchant Category Baseline",
+      impact: b.logit >= 0.4 ? "medium" : (b.logit < 0 ? "safe" : "low"),
+      description: `Category '${req.merchant_category}' statistical profile.`,
+      weight: b.logit
+    });
+
+    // Amount
+    const ratio = req.amount / Math.max(b.avg, 1);
+    if (ratio >= 8.0) {
+      logit += 1.9;
+      factors.push({
+        factor: "Ticket Amount Anomaly",
+        impact: "high",
+        description: `Spend of $${req.amount.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})} is ${ratio.toFixed(1)}x higher than category benchmark ($${b.avg.toFixed(2)}).`,
+        weight: 1.9
+      });
+    } else if (ratio >= 3.5) {
+      logit += 0.95;
+      factors.push({
+        factor: "Ticket Amount Outlier",
+        impact: "medium",
+        description: `Spend of $${req.amount.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})} exceeds category benchmark by ${ratio.toFixed(1)}x.`,
+        weight: 0.95
+      });
+    } else if (ratio <= 1.2) {
+      logit += -0.4;
+      factors.push({
+        factor: "Ticket Amount Benchmark",
+        impact: "safe",
+        description: `Spend of $${req.amount.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})} matches normal expected range.`,
+        weight: -0.4
+      });
+    }
+
+    // Cross-Border
+    if (req.is_cross_border) {
+      logit += 1.3;
+      factors.push({
+        factor: "Cross-Border Acquirer",
+        impact: "high",
+        description: "International payment routing through foreign acquiring network.",
+        weight: 1.3
+      });
+    } else {
+      logit += -0.2;
+      factors.push({
+        factor: "Domestic Routing",
+        impact: "safe",
+        description: "Domestic issuing jurisdiction matched.",
+        weight: -0.2
+      });
+    }
+
+    // Velocity
+    if (req.velocity_last_24h >= 8) {
+      logit += 1.6;
+      factors.push({
+        factor: "Velocity Surge Spike",
+        impact: "high",
+        description: `${req.velocity_last_24h} transactions authorized within 24 hours.`,
+        weight: 1.6
+      });
+    } else if (req.velocity_last_24h >= 4) {
+      logit += 0.7;
+      factors.push({
+        factor: "Elevated Velocity",
+        impact: "medium",
+        description: `${req.velocity_last_24h} transactions in 24 hours.`,
+        weight: 0.7
+      });
+    }
+
+    // Time of Day
+    if (req.time_hour >= 1 && req.time_hour <= 4) {
+      logit += 0.75;
+      factors.push({
+        factor: "Off-Hours Execution Window",
+        impact: "medium",
+        description: `Authorization initiated during high-fraud window (${String(req.time_hour).padStart(2, "0")}:00 hrs).`,
+        weight: 0.75
+      });
+    }
+
+    // Device Trust
+    if (req.device_trust_score <= 0.35) {
+      logit += 1.7;
+      factors.push({
+        factor: "Untrusted Device Fingerprint",
+        impact: "high",
+        description: `Unrecognized client hardware fingerprint (Trust Index: ${req.device_trust_score.toFixed(2)}).`,
+        weight: 1.7
+      });
+    } else if (req.device_trust_score >= 0.90) {
+      logit += -0.6;
+      factors.push({
+        factor: "Verified Known Device",
+        impact: "safe",
+        description: `Established consistent device history (Trust Index: ${req.device_trust_score.toFixed(2)}).`,
+        weight: -0.6
+      });
+    }
+
+    const prob = 1.0 / (1.0 + Math.exp(-logit));
+    const risk_pct = Math.round(prob * 10000) / 100;
+
+    let decision, risk_tier, rationale, action;
+    if (risk_pct >= 60.0) {
+      decision = "DECLINED";
+      risk_tier = "CRITICAL";
+      rationale = "High probability of fraudulent unauthorized chargeback. Immediate authorization decline.";
+      action = "Decline authorization and trigger instant cardholder SMS/push verification alert.";
+    } else if (risk_pct >= 22.0) {
+      decision = "STEP_UP_AUTH";
+      risk_tier = risk_pct >= 40.0 ? "ELEVATED" : "MODERATE";
+      rationale = "Moderate risk exposure detected. Frictionless checkout suspended pending cardholder authentication.";
+      action = "Step-up challenge: Require 3D Secure 2.0 biometric or one-time passcode (OTP).";
+    } else {
+      decision = "APPROVED";
+      risk_tier = "LOW";
+      rationale = "Transaction conforms to verified legitimate cardholder behavior. Frictionless approval granted.";
+      action = "Instant authorization passed. Settle transaction seamlessly.";
+    }
+
+    return {
+      transaction_id: `TXN-${Math.random().toString(16).substring(2, 10).toUpperCase()}`,
+      risk_score_pct: risk_pct,
+      decision,
+      decision_rationale: rationale,
+      risk_tier,
+      factors,
+      recommended_action: action,
+      evaluated_at: new Date().toISOString(),
+      engine: "SpendSense Calibrated Risk Engine v2.0"
+    };
+  }
+
+  renderInspectionResult(res) {
+    const txnIdEl = document.getElementById("res-txn-id");
+    if (txnIdEl) txnIdEl.textContent = res.transaction_id;
+
+    const scoreEl = document.getElementById("res-risk-score");
+    const tierEl = document.getElementById("res-risk-tier");
+    const fillEl = document.getElementById("res-meter-fill");
+    const verdictEl = document.getElementById("res-verdict-pill");
+    const ratEl = document.getElementById("res-rationale");
+    const actEl = document.getElementById("res-action");
+    const tbody = document.getElementById("res-factors-body");
+
+    let color = "var(--telemetry-safe)";
+    let vClass = "approved";
+    let vText = "APPROVED";
+
+    if (res.decision === "DECLINED") {
+      color = "var(--telemetry-danger)";
+      vClass = "declined";
+      vText = "DECLINED / BLOCKED";
+    } else if (res.decision === "STEP_UP_AUTH") {
+      color = "var(--telemetry-amber)";
+      vClass = "step-up";
+      vText = "STEP-UP AUTH (OTP)";
+    }
+
+    if (scoreEl) {
+      scoreEl.textContent = `${res.risk_score_pct.toFixed(2)}%`;
+      scoreEl.style.color = color;
+    }
+
+    if (tierEl) {
+      tierEl.textContent = `${res.risk_tier} RISK`;
+      tierEl.style.color = color;
+    }
+
+    if (fillEl) {
+      fillEl.style.width = `${Math.min(Math.max(res.risk_score_pct, 2), 100)}%`;
+      fillEl.style.backgroundColor = color;
+    }
+
+    if (verdictEl) {
+      verdictEl.className = `verdict-pill ${vClass}`;
+      verdictEl.innerHTML = `<span>●</span> ${vText}`;
+    }
+
+    if (ratEl) ratEl.textContent = res.decision_rationale;
+    if (actEl) actEl.textContent = `Action: ${res.recommended_action}`;
+
+    if (tbody && res.factors) {
+      tbody.innerHTML = res.factors.map(f => {
+        let tagColor = "var(--text-muted)";
+        if (f.impact === "high") tagColor = "var(--telemetry-danger)";
+        else if (f.impact === "medium") tagColor = "var(--telemetry-amber)";
+        else if (f.impact === "safe") tagColor = "var(--telemetry-safe)";
+        else if (f.impact === "low") tagColor = "var(--telemetry-cyan)";
+
+        return `
+          <tr>
+            <td>
+              <strong style="color:#fff; display:block;">${f.factor}</strong>
+              <span style="font-size:0.7rem; color:var(--text-muted);">${f.description}</span>
+            </td>
+            <td>
+              <span style="color:${tagColor}; font-weight:700; text-transform:uppercase; font-size:0.68rem; font-family:var(--font-mono);">${f.impact}</span>
+            </td>
+            <td class="num" style="color:#fff; font-size:0.75rem;">
+              ${f.weight > 0 ? "+" : ""}${f.weight.toFixed(2)}
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+  }
+
+  setupBatchAuditor() {
+    const dropzone = document.getElementById("csv-dropzone");
+    const fileInput = document.getElementById("csv-file-input");
+    const browseBtn = document.getElementById("btn-browse-csv");
+    const demoBtn = document.getElementById("btn-load-demo-csv");
+    const exportBtn = document.getElementById("btn-export-audit");
+
+    if (browseBtn && fileInput) {
+      browseBtn.addEventListener("click", () => fileInput.click());
+    }
+
+    if (fileInput) {
+      fileInput.addEventListener("change", (e) => {
+        if (e.target.files && e.target.files[0]) {
+          this.parseUploadedCSV(e.target.files[0]);
+        }
+      });
+    }
+
+    if (dropzone) {
+      dropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("drag-over");
+      });
+      dropzone.addEventListener("dragleave", () => {
+        dropzone.classList.remove("drag-over");
+      });
+      dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("drag-over");
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          this.parseUploadedCSV(e.dataTransfer.files[0]);
+        }
+      });
+    }
+
+    if (demoBtn) {
+      demoBtn.addEventListener("click", () => this.loadDemoBatchData());
+    }
+
+    if (exportBtn) {
+      exportBtn.addEventListener("click", () => this.exportAuditReport());
+    }
+  }
+
+  loadDemoBatchData() {
+    const demoTxns = [
+      { date: "2026-11-12 09:14", merchant: "Whole Foods Market", category: "Groceries & Supermarkets", amount: 64.20, cross: false, hour: 9 },
+      { date: "2026-11-12 11:32", merchant: "Blue Bottle Coffee", category: "Dining & Restaurants", amount: 8.50, cross: false, hour: 11 },
+      { date: "2026-11-12 14:02", merchant: "RideShare NYC", category: "Fuel & Transportation", amount: 42.50, cross: false, hour: 14 },
+      { date: "2026-11-12 14:04", merchant: "RideShare NYC", category: "Fuel & Transportation", amount: 42.50, cross: false, hour: 14, duplicate: true },
+      { date: "2026-11-12 19:45", merchant: "Trattoria Milano", category: "Dining & Restaurants", amount: 118.00, cross: false, hour: 19 },
+      { date: "2026-11-13 03:15", merchant: "Luxury Tech Vault SG", category: "Online Retail & E-Commerce", amount: 3850.00, cross: true, hour: 3 },
+      { date: "2026-11-13 08:30", merchant: "Chevron Gas Station", category: "Fuel & Transportation", amount: 55.00, cross: false, hour: 8 },
+      { date: "2026-11-13 12:20", merchant: "Amazon Prime Store", category: "Online Retail & E-Commerce", amount: 94.10, cross: false, hour: 12 },
+      { date: "2026-11-13 16:40", merchant: "Netflix Monthly Sub", category: "Entertainment & Media", amount: 19.99, cross: false, hour: 16 },
+      { date: "2026-11-14 02:10", merchant: "CryptoExchange P2P", category: "Online Retail & E-Commerce", amount: 2400.00, cross: true, hour: 2 },
+      { date: "2026-11-14 10:15", merchant: "Trader Joe's", category: "Groceries & Supermarkets", amount: 78.40, cross: false, hour: 10 },
+      { date: "2026-11-14 13:50", merchant: "Delta Air Lines", category: "Travel & Airlines", amount: 480.00, cross: false, hour: 13 },
+      { date: "2026-11-14 17:10", merchant: "Subway Station Metro", category: "Fuel & Transportation", amount: 2.90, cross: false, hour: 17 },
+      { date: "2026-11-14 18:25", merchant: "Apple Store Online", category: "Online Retail & E-Commerce", amount: 129.00, cross: false, hour: 18 }
+    ];
+
+    this.processBatchTransactions(demoTxns);
+  }
+
+  parseUploadedCSV(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result;
+      const lines = text.split("\n").filter(l => l.trim().length > 0);
+      if (lines.length < 2) return;
+
+      const header = lines[0].toLowerCase().split(",").map(h => h.trim().replace(/"/g, ""));
+      const parsed = [];
+
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(",").map(p => p.trim().replace(/"/g, ""));
+        if (parts.length >= 2) {
+          const amount = parseFloat(parts[1] || parts[parts.length - 1] || "0");
+          parsed.push({
+            date: parts[0] || "2026-11-14",
+            merchant: parts[2] || "Merchant Terminal",
+            category: parts[3] || "Online Retail & E-Commerce",
+            amount: isNaN(amount) ? 50.0 : amount,
+            cross: parts[4] === "true",
+            hour: 12
+          });
+        }
+      }
+      this.processBatchTransactions(parsed);
+    };
+    reader.readAsText(file);
+  }
+
+  processBatchTransactions(txns) {
+    let totalAmt = 0;
+    let anomalies = 0;
+    let duplicates = 0;
+
+    const auditedList = txns.map((t, idx) => {
+      totalAmt += t.amount;
+      const risk = this.calculateRisk({
+        cardholder_id: "BATCH-USER",
+        amount: t.amount,
+        merchant_category: t.category,
+        time_hour: t.hour || 12,
+        velocity_last_24h: 3,
+        device_trust_score: 0.90,
+        is_cross_border: t.cross || false
+      });
+
+      let finding = "Normal transaction pattern.";
+      let statusClass = "safe";
+      let statusLabel = "CLEAN";
+
+      if (t.duplicate) {
+        duplicates++;
+        anomalies++;
+        statusClass = "amber";
+        statusLabel = "DUPLICATE";
+        finding = "Duplicate charge within 2 minutes of prior authorization!";
+      } else if (risk.decision === "DECLINED") {
+        anomalies++;
+        statusClass = "alert";
+        statusLabel = "SUSPICIOUS";
+        finding = `High-risk outlier: $${t.amount.toFixed(2)} ticket with elevated category score (${risk.risk_score_pct}% risk).`;
+      } else if (risk.decision === "STEP_UP_AUTH") {
+        statusClass = "amber";
+        statusLabel = "REVIEW";
+        finding = `Unusual ticket velocity/amount requiring cardholder confirmation.`;
+      }
+
+      return {
+        ...t,
+        statusClass,
+        statusLabel,
+        finding,
+        riskScore: risk.risk_score_pct
+      };
+    });
+
+    this.currentBatchAudit = auditedList;
+
+    const totalEl = document.getElementById("batch-total-amount");
+    const countEl = document.getElementById("batch-txn-count");
+    const anomEl = document.getElementById("batch-anomaly-count");
+    const dupEl = document.getElementById("batch-duplicate-count");
+    const appEl = document.getElementById("batch-approval-rate");
+    const wrapper = document.getElementById("batch-results-wrapper");
+    const tbody = document.getElementById("batch-table-body");
+
+    if (totalEl) totalEl.textContent = `$${totalAmt.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    if (countEl) countEl.textContent = `${txns.length} Transactions`;
+    if (anomEl) anomEl.textContent = anomalies;
+    if (dupEl) dupEl.textContent = duplicates;
+    if (appEl) {
+      const rate = ((txns.length - anomalies) / Math.max(txns.length, 1)) * 100;
+      appEl.textContent = `${rate.toFixed(1)}%`;
+    }
+
+    if (tbody) {
+      tbody.innerHTML = auditedList.map(item => `
+        <tr>
+          <td style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);">${item.date}</td>
+          <td><strong style="color:#fff;">${item.merchant}</strong></td>
+          <td style="font-size:0.72rem; color:var(--text-secondary);">${item.category}</td>
+          <td class="num" style="color:#fff; font-weight:700;">$${item.amount.toFixed(2)}</td>
+          <td>
+            <span class="readout-pill" style="font-size:0.68rem; color:${item.statusClass === 'alert' ? 'var(--telemetry-danger)' : (item.statusClass === 'amber' ? 'var(--telemetry-amber)' : 'var(--telemetry-safe)')};">
+              ${item.statusLabel}
+            </span>
+          </td>
+          <td style="font-size:0.72rem; color:var(--text-secondary);">${item.finding}</td>
+        </tr>
+      `).join("");
+    }
+
+    if (wrapper) wrapper.style.display = "block";
+  }
+
+  exportAuditReport() {
+    if (!this.currentBatchAudit) return;
+    const blob = new Blob([JSON.stringify(this.currentBatchAudit, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `SpendSense_Audit_Report_${new Date().toISOString().substring(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  setupApiPlayground() {
+    const testScoreBtn = document.getElementById("btn-api-test-score");
+    const testOverviewBtn = document.getElementById("btn-api-test-overview");
+    const testModelBtn = document.getElementById("btn-api-test-model");
+
+    if (testScoreBtn) {
+      testScoreBtn.addEventListener("click", async () => {
+        const out = document.getElementById("api-output-score");
+        if (out) out.textContent = "Executing POST /api/fraud/score...";
+        const payload = {
+          cardholder_id: "CARD-89241",
+          amount: 2450.00,
+          merchant_category: "Travel & Airlines",
+          time_hour: 15,
+          velocity_last_24h: 5,
+          device_trust_score: 0.85,
+          is_cross_border: true
+        };
+
+        try {
+          const res = await fetch("/api/fraud/score", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (out) out.textContent = JSON.stringify(data, null, 2);
+            return;
+          }
+        } catch (e) {
+          // Fallback to client simulated execution
+        }
+
+        const sim = this.calculateRisk(payload);
+        if (out) out.textContent = JSON.stringify(sim, null, 2);
+      });
+    }
+
+    if (testOverviewBtn) {
+      testOverviewBtn.addEventListener("click", async () => {
+        const out = document.getElementById("api-output-overview");
+        if (out) out.textContent = "Executing GET /api/overview...";
+        try {
+          const res = await fetch("/api/overview");
+          if (res.ok) {
+            const data = await res.json();
+            if (out) out.textContent = JSON.stringify(data, null, 2);
+            return;
+          }
+        } catch (e) {}
+
+        if (out) out.textContent = JSON.stringify(this.data.overview, null, 2);
+      });
+    }
+
+    if (testModelBtn) {
+      testModelBtn.addEventListener("click", async () => {
+        const out = document.getElementById("api-output-model");
+        if (out) out.textContent = "Executing GET /api/fraud/model...";
+        try {
+          const res = await fetch("/api/fraud/model");
+          if (res.ok) {
+            const data = await res.json();
+            if (out) out.textContent = JSON.stringify(data, null, 2);
+            return;
+          }
+        } catch (e) {}
+
+        if (out) out.textContent = JSON.stringify(this.data.model, null, 2);
+      });
+    }
+  }
+
+  setupDeckPreview() {
+    const toggleBtn = document.getElementById("btn-toggle-slide-preview");
+    const drawer = document.getElementById("deck-slides-drawer");
+    if (toggleBtn && drawer) {
+      toggleBtn.addEventListener("click", () => {
+        const isHidden = drawer.style.display === "none";
+        drawer.style.display = isHidden ? "block" : "none";
+        toggleBtn.innerHTML = isHidden ? "<span>✕</span> Close Slide Preview" : "<span>✦</span> View Slide Highlights";
+      });
+    }
   }
 
   setupSimulator() {

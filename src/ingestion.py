@@ -16,10 +16,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sqlalchemy import text
 
 from src.config import Config
-from src.database import get_engine, init_db
+from src.database import get_engine, init_db, text
 
 logger = logging.getLogger(__name__)
 

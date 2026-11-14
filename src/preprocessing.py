@@ -8,8 +8,63 @@ import logging
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import RobustScaler, StandardScaler
+
+try:
+    from sklearn.model_selection import train_test_split
+    from sklearn.preprocessing import RobustScaler, StandardScaler
+    HAS_SKLEARN = True
+except ImportError:
+    HAS_SKLEARN = False
+
+    class RobustScaler:
+        def fit_transform(self, X):
+            arr = np.asarray(X, dtype=float)
+            med = np.median(arr, axis=0)
+            q75, q25 = np.percentile(arr, [75, 25], axis=0)
+            iqr = np.where((q75 - q25) == 0, 1.0, q75 - q25)
+            return (arr - med) / iqr
+
+    class StandardScaler:
+        def fit_transform(self, X):
+            arr = np.asarray(X, dtype=float)
+            mean = np.mean(arr, axis=0)
+            std = np.std(arr, axis=0)
+            std = np.where(std == 0, 1.0, std)
+            return (arr - mean) / std
+
+    def train_test_split(X, y, test_size=0.2, stratify=None, random_state=None):
+        if random_state is not None:
+            np.random.seed(random_state)
+        n = len(X)
+        indices = np.arange(n)
+        if stratify is not None:
+            stratify = np.asarray(stratify)
+            train_idx, test_idx = [], []
+            for label in np.unique(stratify):
+                label_indices = indices[stratify == label]
+                np.random.shuffle(label_indices)
+                split_point = int(len(label_indices) * (1 - test_size))
+                train_idx.extend(label_indices[:split_point])
+                test_idx.extend(label_indices[split_point:])
+            train_idx = np.array(train_idx)
+            test_idx = np.array(test_idx)
+        else:
+            np.random.shuffle(indices)
+            split_point = int(n * (1 - test_size))
+            train_idx = indices[:split_point]
+            test_idx = indices[split_point:]
+
+        if isinstance(X, pd.DataFrame):
+            X_train, X_test = X.iloc[train_idx], X.iloc[test_idx]
+        else:
+            X_train, X_test = X[train_idx], X[test_idx]
+
+        if isinstance(y, (pd.Series, pd.DataFrame)):
+            y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+        else:
+            y_train, y_test = y[train_idx], y[test_idx]
+
+        return X_train, X_test, y_train, y_test
 
 from src.database import execute_sql
 

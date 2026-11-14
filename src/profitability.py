@@ -22,9 +22,8 @@ This methodology mirrors how card issuer risk and product teams evaluate portfol
 import logging
 
 import pandas as pd
-from sqlalchemy import text
 
-from src.database import execute_sql, get_engine
+from src.database import execute_sql, get_engine, text
 
 logger = logging.getLogger(__name__)
 
@@ -151,6 +150,19 @@ def get_profitability_summary() -> list[dict]:
     except Exception as e:
         logger.warning("Querying segment_profitability deferred or table uninitialized: %s", e)
         rows = []
+
+    if not rows:
+        import json
+        from src.config import Config
+        cache_file = Config.PROJECT_ROOT / "analytics" / "cache" / "precomputed_analytics.json"
+        if cache_file.exists():
+            try:
+                with open(cache_file, "r", encoding="utf-8") as f:
+                    cdata = json.load(f)
+                return cdata.get("profitability", [])
+            except Exception:
+                pass
+
     return [
         {
             "segment_label": r["segment_label"],

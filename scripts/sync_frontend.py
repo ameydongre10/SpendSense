@@ -42,6 +42,15 @@ def sync_assets():
         shutil.copytree(src_js, dst_js)
         print(f"  -> Synchronized js/ to {target.name}/js/")
 
+        # 4. Copy deliverables/ (Executive PPTX presentation)
+        src_deliv = FRONTEND_DIR / "deliverables"
+        dst_deliv = target / "deliverables"
+        if src_deliv.exists():
+            if dst_deliv.exists():
+                shutil.rmtree(dst_deliv)
+            shutil.copytree(src_deliv, dst_deliv)
+            print(f"  -> Synchronized deliverables/ to {target.name}/deliverables/")
+
     print(
         "[+] Synchronization complete! Zero drift across frontend/, docs/, and public/."
     )

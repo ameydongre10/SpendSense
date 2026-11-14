@@ -30,15 +30,49 @@
       </div>
 
       <nav class="terminal-nav" aria-label="Terminal Navigation">
-        <a href="#overview" class="nav-link-btn">Overview</a>
+        <a href="#overview" class="nav-link-btn active">Overview</a>
         <a href="#simulator" class="nav-link-btn">Risk Simulator</a>
         <a href="#pillars" class="nav-link-btn">Analytical Pillars</a>
-        <a href="#recommendations" class="nav-link-btn">Recommendations</a>
+        <a href="#customer-inspector" class="nav-link-btn">Customer Suite</a>
+        <a href="#csv-auditor" class="nav-link-btn">Statement Auditor</a>
+        <a href="#api-playground" class="nav-link-btn">API Playground</a>
         <a href="#deck" class="nav-link-btn">Board Deck</a>
-        <a href="/api/docs" target="_blank" rel="noopener noreferrer" class="nav-action-btn">API Docs ↗</a>
+        <a href="#api-playground" id="api-docs-nav-link" class="nav-action-btn">API Docs ↗</a>
       </nav>
     </div>
   </header>
+
+  <!-- SUB-NAVIGATION VIEW MODE SWITCHER -->
+  <div class="view-mode-nav-bar">
+    <div class="wrap">
+      <div class="view-mode-tabs">
+        <button class="view-tab-btn active" data-target="overview">
+          <span>🏛 Scheme Intelligence</span>
+          <span class="tab-badge">284K TXNS</span>
+        </button>
+        <button class="view-tab-btn" data-target="customer-inspector">
+          <span>⚡ Live Risk Inspector</span>
+          <span class="tab-badge" style="color:var(--telemetry-safe);">REAL-TIME</span>
+        </button>
+        <button class="view-tab-btn" data-target="csv-auditor">
+          <span>📁 Statement Auditor</span>
+          <span class="tab-badge">BATCH CSV</span>
+        </button>
+        <button class="view-tab-btn" data-target="budget-advisor">
+          <span>📊 Budget Advisor</span>
+          <span class="tab-badge">SMART RFM</span>
+        </button>
+        <button class="view-tab-btn" data-target="api-playground">
+          <span>⚙ API Playground</span>
+          <span class="tab-badge">FASTAPI</span>
+        </button>
+        <button class="view-tab-btn" data-target="deck">
+          <span>💼 Executive Deck</span>
+          <span class="tab-badge">PPTX</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <main>
     <!-- HERO / TELEMETRY OVERVIEW HEADER -->
@@ -432,6 +466,413 @@
       </div>
     </section>
 
+    <!-- SECTION: LIVE CUSTOMER & MERCHANT TRANSACTION RISK INSPECTOR -->
+    <section class="section-wrapper" id="customer-inspector">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="section-eyebrow">// CUSTOMER & MERCHANT RISK SUITE</div>
+          <h2 class="section-title">Live Transaction Risk Inspector</h2>
+          <p class="section-subtitle">
+            Real-time authorization scoring engine for cardholders, online checkouts, and acquiring merchants.
+            Test any transaction against calibrated statistical benchmarks to observe real-time fraud probability, decision outcomes, and risk factor attribution.
+          </p>
+        </div>
+
+        <!-- Presets Ribbon -->
+        <div style="margin-bottom:1.25rem;">
+          <span style="font-size:0.75rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.05em;">Quick Presets:</span>
+          <div class="presets-container">
+            <button class="preset-chip" id="preset-grocery">Routine Grocery ($34.50, Domestic, Low Velocity)</button>
+            <button class="preset-chip" id="preset-travel">Cross-Border Flight ($2,450, High Velocity Spike)</button>
+            <button class="preset-chip" id="preset-fraud">3 AM E-Commerce Surge ($4,850, New Untrusted Device)</button>
+            <button class="preset-chip" id="preset-dining">Weekend Dining ($145.00, Known Device)</button>
+          </div>
+        </div>
+
+        <div class="customer-grid-layout">
+          <!-- Input Form Card -->
+          <div class="inspector-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border-subtle); padding-bottom:0.75rem;">
+              <span style="font-size:0.85rem; font-weight:700; color:#fff;">⚙ Transaction Parameters</span>
+              <span class="readout-pill" style="color:var(--telemetry-cyan);">Engine: Calibrated v2.0</span>
+            </div>
+
+            <form id="inspector-form" onsubmit="return false;">
+              <div class="form-group-grid">
+                <div>
+                  <label class="field-label" for="inp-cardholder">
+                    <span>Cardholder ID</span>
+                    <span class="field-hint">Format: CARD-XXXXX</span>
+                  </label>
+                  <input type="text" id="inp-cardholder" class="custom-input" value="CARD-89241" required>
+                </div>
+
+                <div>
+                  <label class="field-label" for="inp-amount">
+                    <span>Transaction Amount ($)</span>
+                    <span class="field-hint">USD Value</span>
+                  </label>
+                  <input type="number" id="inp-amount" class="custom-input" value="120.50" min="0.01" step="0.01" required>
+                </div>
+
+                <div>
+                  <label class="field-label" for="inp-category">
+                    <span>Merchant Category (MCC)</span>
+                  </label>
+                  <select id="inp-category" class="custom-select">
+                    <option value="Online Retail & E-Commerce" selected>Online Retail & E-Commerce (Avg $88)</option>
+                    <option value="Travel & Airlines">Travel & Airlines (Avg $127)</option>
+                    <option value="Dining & Restaurants">Dining & Restaurants (Avg $72)</option>
+                    <option value="Groceries & Supermarkets">Groceries & Supermarkets (Avg $50)</option>
+                    <option value="Entertainment & Media">Entertainment & Media (Avg $109)</option>
+                    <option value="Fuel & Transportation">Fuel & Transportation (Avg $169)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label class="field-label" for="inp-hour">
+                    <span>Authorization Hour (<span id="inp-hour-val">14:00</span>)</span>
+                  </label>
+                  <input type="range" id="inp-hour" min="0" max="23" step="1" value="14" style="width:100%; margin-top:0.4rem;">
+                </div>
+
+                <div>
+                  <label class="field-label" for="inp-velocity">
+                    <span>24h Card Velocity (Txns)</span>
+                    <span class="field-hint">Prior transactions</span>
+                  </label>
+                  <input type="number" id="inp-velocity" class="custom-input" value="2" min="0" max="50">
+                </div>
+
+                <div>
+                  <label class="field-label" for="inp-trust">
+                    <span>Device Trust Score (<span id="inp-trust-val">95%</span>)</span>
+                  </label>
+                  <input type="range" id="inp-trust" min="0.0" max="1.0" step="0.05" value="0.95" style="width:100%; margin-top:0.4rem;">
+                </div>
+              </div>
+
+              <div style="margin-top:1rem; display:flex; align-items:center; gap:0.75rem; background:rgba(255,255,255,0.02); padding:0.75rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+                <input type="checkbox" id="inp-cross-border" style="accent-color:var(--telemetry-cyan); width:1.1rem; height:1.1rem; cursor:pointer;">
+                <label for="inp-cross-border" style="font-size:0.8rem; cursor:pointer; color:var(--text-primary);">
+                  <strong>Cross-Border / International Acquirer</strong>
+                  <span style="display:block; font-size:0.72rem; color:var(--text-muted);">Payment routing originates outside card issuing jurisdiction.</span>
+                </label>
+              </div>
+
+              <div style="margin-top:1.25rem; display:flex; gap:0.75rem;">
+                <button type="button" id="btn-run-inspection" class="btn-primary" style="flex:1; justify-content:center; padding:0.75rem;">
+                  <span>⚡</span> Run Real-Time Fraud Scan
+                </button>
+                <button type="button" id="btn-reset-inspection" class="btn-secondary" style="padding:0.75rem 1rem;">
+                  Reset
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Real-Time Telemetry Result Panel -->
+          <div class="result-telemetry-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:0.7rem; color:var(--text-muted); text-transform:uppercase; font-family:var(--font-mono);">TRANSACTION TELEMETRY AUDIT</span>
+                <div id="res-txn-id" style="font-family:var(--font-mono); font-size:0.9rem; font-weight:700; color:#fff;">TXN-INIT-001</div>
+              </div>
+              <div id="res-verdict-pill" class="verdict-pill approved">
+                <span>●</span> APPROVED
+              </div>
+            </div>
+
+            <div class="risk-score-display">
+              <div>
+                <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-family:var(--font-mono);">CALCULATED FRAUD RISK</div>
+                <div class="risk-num-display" id="res-risk-score" style="color:var(--telemetry-safe);">0.85%</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-family:var(--font-mono);">SECURITY TIER</div>
+                <div id="res-risk-tier" style="font-family:var(--font-mono); font-size:1.1rem; font-weight:700; color:var(--telemetry-safe);">LOW RISK</div>
+              </div>
+            </div>
+
+            <div class="risk-meter-bar-track">
+              <div id="res-meter-fill" class="risk-meter-fill" style="width:0.85%; background:var(--telemetry-safe);"></div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.02); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:0.85rem;">
+              <strong style="font-size:0.8rem; color:#fff; display:block; margin-bottom:0.25rem;">Decision Rationale:</strong>
+              <p id="res-rationale" style="font-size:0.75rem; color:var(--text-secondary); line-height:1.4;">
+                Transaction matches established domestic spend profile. Velocity and ticket values are well within baseline tolerance.
+              </p>
+              <div id="res-action" style="margin-top:0.5rem; font-size:0.75rem; font-family:var(--font-mono); color:var(--telemetry-safe);">
+                Action: Instant authorization passed. Settle transaction seamlessly.
+              </div>
+            </div>
+
+            <div>
+              <span style="font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted); display:block; margin-bottom:0.4rem;">
+                Explainable Risk Attribution Components:
+              </span>
+              <table class="factors-list-table">
+                <thead>
+                  <tr>
+                    <th>Factor</th>
+                    <th>Impact</th>
+                    <th>Weight</th>
+                  </tr>
+                </thead>
+                <tbody id="res-factors-body">
+                  <!-- Dynamically populated -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: DRAG-AND-DROP CSV BATCH STATEMENT AUDITOR -->
+    <section class="section-wrapper" id="csv-auditor">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="section-eyebrow">// BATCH STATEMENT HEALTH CHECK</div>
+          <h2 class="section-title">Drag-and-Drop Statement & Transaction Auditor</h2>
+          <p class="section-subtitle">
+            Upload any card or bank statement CSV to scan an entire batch of transactions in seconds. 
+            Isolate suspicious duplicate charges, detect off-hours billing spikes, and generate an instant compliance audit.
+          </p>
+        </div>
+
+        <div class="dropzone-box" id="csv-dropzone">
+          <input type="file" id="csv-file-input" accept=".csv" style="display:none;">
+          <div style="font-size:2rem; margin-bottom:0.5rem;">📁</div>
+          <strong style="color:#fff; font-size:1rem; display:block;">Drop your Card Statement CSV here or click to browse</strong>
+          <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.35rem;">
+            Supports standard CSVs with columns: Date, Amount, Merchant, Category.
+          </p>
+          <div style="margin-top:1rem; display:flex; justify-content:center; gap:0.75rem;">
+            <button type="button" id="btn-browse-csv" class="btn-primary" style="font-size:0.75rem; padding:0.45rem 1rem;">
+              Browse Files
+            </button>
+            <button type="button" id="btn-load-demo-csv" class="btn-secondary" style="font-size:0.75rem; padding:0.45rem 1rem;">
+              ⚡ Load Demo Card Statement (50 Txns)
+            </button>
+          </div>
+        </div>
+
+        <!-- Batch Metrics Ribbon -->
+        <div id="batch-results-wrapper" style="display:none; margin-top:1.5rem;">
+          <div class="batch-metrics-ribbon">
+            <div class="matrix-cell">
+              <div class="cell-label">Audited Volume</div>
+              <div class="cell-value num" id="batch-total-amount" style="font-size:1.1rem; color:#fff;">$0.00</div>
+              <div style="font-size:0.7rem; color:var(--text-muted);" id="batch-txn-count">0 Transactions</div>
+            </div>
+            <div class="matrix-cell alert">
+              <div class="cell-label">Flagged Anomalies</div>
+              <div class="cell-value num" id="batch-anomaly-count" style="font-size:1.1rem; color:var(--telemetry-danger);">0</div>
+              <div style="font-size:0.7rem; color:var(--text-muted);">Potential Unauthorized</div>
+            </div>
+            <div class="matrix-cell amber">
+              <div class="cell-label">Duplicate Charges</div>
+              <div class="cell-value num" id="batch-duplicate-count" style="font-size:1.1rem; color:var(--telemetry-amber);">0</div>
+              <div style="font-size:0.7rem; color:var(--text-muted);">Double-billings</div>
+            </div>
+            <div class="matrix-cell safe">
+              <div class="cell-label">Clean Approval Rate</div>
+              <div class="cell-value num" id="batch-approval-rate" style="font-size:1.1rem; color:var(--telemetry-safe);">100%</div>
+              <div style="font-size:0.7rem; color:var(--text-muted);">Zero Dispute Tickets</div>
+            </div>
+          </div>
+
+          <!-- Flagged Transactions Table -->
+          <div style="margin-top:1.25rem; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:1rem; overflow-x:auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+              <strong style="color:#fff; font-size:0.85rem;">Audited Transactions & Flagged Items</strong>
+              <button id="btn-export-audit" class="ctrl-btn" style="background:var(--bg-surface); border:1px solid var(--border-medium); color:#fff;">
+                ⬇ Export Audit Report (.JSON)
+              </button>
+            </div>
+            <table class="factors-list-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Merchant</th>
+                  <th>Category</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Audit Findings</th>
+                </tr>
+              </thead>
+              <tbody id="batch-table-body">
+                <!-- Populated via app.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: PERSONAL SPEND & BUDGET HEALTH ADVISOR -->
+    <section class="section-wrapper" id="budget-advisor">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="section-eyebrow">// CARDHOLDER VALUE OPTIMIZATION</div>
+          <h2 class="section-title">Personal Spend & Budget Health Advisor</h2>
+          <p class="section-subtitle">
+            Applying portfolio RFM intelligence directly to individual consumer finances: 
+            track spend velocity, set category caps, and eliminate hidden subscription leaks.
+          </p>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.25rem;">
+          <!-- Card 1: Monthly Spend Velocity -->
+          <div class="terminal-panel" style="padding:1.25rem;">
+            <div class="panel-header">
+              <span class="panel-title"><span>📈</span> Burn Rate & Velocity Index</span>
+              <span class="slider-badge" style="color:var(--telemetry-safe);">Pacing: ON TRACK</span>
+            </div>
+            <div style="margin-top:1rem;">
+              <div style="display:flex; justify-content:space-between; align-items:baseline;">
+                <span class="num" style="font-size:1.8rem; font-weight:800; color:#fff;">$3,420.00</span>
+                <span style="font-size:0.75rem; color:var(--text-muted);">Budget Cap: $4,500.00</span>
+              </div>
+              <div class="risk-meter-bar-track" style="margin-top:0.5rem; height:8px;">
+                <div class="risk-meter-fill" style="width:76%; background:var(--telemetry-cyan);"></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem;">
+                <span>Month elapsed: 80%</span>
+                <span style="color:var(--telemetry-safe);">Under-budget surplus: +$180.00</span>
+              </div>
+              <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.75rem; line-height:1.4;">
+                At current daily velocity of <strong>$114/day</strong>, projected end-of-month spend is $4,332, within your designated ceiling.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 2: Subscription Leak Detector -->
+          <div class="terminal-panel" style="padding:1.25rem;">
+            <div class="panel-header">
+              <span class="panel-title"><span>🔍</span> Recurring Subscription Auditor</span>
+              <span class="slider-badge" style="color:var(--telemetry-amber);">4 Recurring</span>
+            </div>
+            <div style="margin-top:0.75rem; display:flex; flex-direction:column; gap:0.5rem;">
+              <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:0.5rem 0.75rem; border-radius:var(--radius-xs);">
+                <div>
+                  <strong style="color:#fff; font-size:0.75rem;">Cloud Storage Pro</strong>
+                  <span style="display:block; font-size:0.65rem; color:var(--text-muted);">Monthly on 4th · Active</span>
+                </div>
+                <span class="num" style="color:#fff; font-size:0.8rem;">$9.99/mo</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:0.5rem 0.75rem; border-radius:var(--radius-xs);">
+                <div>
+                  <strong style="color:#fff; font-size:0.75rem;">Streaming Music Pass</strong>
+                  <span style="display:block; font-size:0.65rem; color:var(--text-muted);">Monthly on 12th · Active</span>
+                </div>
+                <span class="num" style="color:#fff; font-size:0.8rem;">$14.99/mo</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.2); padding:0.5rem 0.75rem; border-radius:var(--radius-xs);">
+                <div>
+                  <strong style="color:var(--telemetry-danger); font-size:0.75rem;">Gym Membership (Unused)</strong>
+                  <span style="display:block; font-size:0.65rem; color:var(--text-muted);">Zero check-ins in 90 days</span>
+                </div>
+                <span class="num" style="color:var(--telemetry-danger); font-size:0.8rem;">$49.00/mo</span>
+              </div>
+            </div>
+            <div style="margin-top:0.75rem; font-size:0.72rem; color:var(--telemetry-safe);">
+              Potential Annual Savings Identified: <strong>$588.00 / year</strong>
+            </div>
+          </div>
+
+          <!-- Card 3: RFM Segment Growth Accelerator -->
+          <div class="terminal-panel" style="padding:1.25rem;">
+            <div class="panel-header">
+              <span class="panel-title"><span>✦</span> Cardholder Value Tier</span>
+              <span class="slider-badge" style="color:var(--telemetry-cyan);">CHAMPION TIER</span>
+            </div>
+            <div style="margin-top:1rem;">
+              <div style="font-size:0.8rem; color:#fff; font-weight:600;">You are in the Top 5% of Cardholders</div>
+              <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.35rem; line-height:1.4;">
+                Your net commercial contribution index is <strong>3.16x</strong> portfolio benchmark. 
+                Eligible for premium network benefits:
+              </p>
+              <ul style="font-size:0.72rem; color:var(--text-secondary); margin-top:0.5rem; padding-left:1.2rem; line-height:1.6;">
+                <li>Zero foreign transaction fees on international travel</li>
+                <li>Instant $100 airline lounge credit available</li>
+                <li>Enhanced purchase protection up to $10,000</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: INTERACTIVE API & MODEL PLAYGROUND -->
+    <section class="section-wrapper" id="api-playground">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="section-eyebrow">// DEVELOPER INTEGRATION & OPENAPI</div>
+          <h2 class="section-title">Interactive API & Model Playground</h2>
+          <p class="section-subtitle">
+            Directly test SpendSense API endpoints in real-time. Works seamlessly in full FastAPI backend mode, 
+            Vercel Serverless mode, and client-side simulation on static hosting.
+          </p>
+        </div>
+
+        <div class="api-playground-grid">
+          <!-- Endpoint 1: POST /api/fraud/score -->
+          <div class="api-endpoint-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span class="method-tag post">POST</span>
+                <span style="font-family:var(--font-mono); font-size:0.8rem; font-weight:700; color:#fff;">/api/fraud/score</span>
+              </div>
+              <button id="btn-api-test-score" class="ctrl-btn active" style="font-size:0.7rem; padding:0.25rem 0.6rem;">Execute ⚡</button>
+            </div>
+            <p style="font-size:0.72rem; color:var(--text-secondary);">
+              Calculates real-time calibrated fraud risk probability, decision flags, and explainable feature impact.
+            </p>
+            <div class="code-terminal-box" id="api-output-score">{
+  "status": "Ready. Click Execute to test live API..."
+}</div>
+          </div>
+
+          <!-- Endpoint 2: GET /api/overview -->
+          <div class="api-endpoint-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span class="method-tag get">GET</span>
+                <span style="font-family:var(--font-mono); font-size:0.8rem; font-weight:700; color:#fff;">/api/overview</span>
+              </div>
+              <button id="btn-api-test-overview" class="ctrl-btn active" style="font-size:0.7rem; padding:0.25rem 0.6rem;">Execute ⚡</button>
+            </div>
+            <p style="font-size:0.72rem; color:var(--text-secondary);">
+              Returns high-level network KPIs: 284,807 txns, 0.173% fraud rate, and $42,538 avoided revenue at risk.
+            </p>
+            <div class="code-terminal-box" id="api-output-overview">{
+  "status": "Ready. Click Execute to query overview metrics..."
+}</div>
+          </div>
+
+          <!-- Endpoint 3: GET /api/fraud/model -->
+          <div class="api-endpoint-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <span class="method-tag get">GET</span>
+                <span style="font-family:var(--font-mono); font-size:0.8rem; font-weight:700; color:#fff;">/api/fraud/model</span>
+              </div>
+              <button id="btn-api-test-model" class="ctrl-btn active" style="font-size:0.7rem; padding:0.25rem 0.6rem;">Execute ⚡</button>
+            </div>
+            <p style="font-size:0.72rem; color:var(--text-secondary);">
+              Returns Logistic Regression baseline vs XGBoost performance: AUPRC, Recall, Precision, and friction reduction.
+            </p>
+            <div class="code-terminal-box" id="api-output-model">{
+  "status": "Ready. Click Execute to retrieve model metrics..."
+}</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- SECTION: EXECUTIVE PRESENTATION DECK DELIVERABLE -->
     <section class="section-wrapper" id="deck" style="border-bottom:none;">
       <div class="wrap">
@@ -445,12 +886,49 @@
             </p>
           </div>
           <div class="deck-actions">
-            <a href="deliverables/SpendSense_Recommendations.pptx" download class="btn-primary">
+            <a href="deliverables/SpendSense_Recommendations.pptx" download class="btn-primary" id="btn-download-deck">
               <span>⬇</span> Download Executive Deck (.pptx)
             </a>
-            <a href="/api/docs" target="_blank" rel="noopener noreferrer" class="btn-secondary">
-              <span>⚡</span> Explore OpenAPI Spec
-            </a>
+            <button id="btn-toggle-slide-preview" class="btn-secondary" type="button">
+              <span>✦</span> View Slide Highlights
+            </button>
+          </div>
+        </div>
+
+        <!-- Slide Highlights Drawer -->
+        <div id="deck-slides-drawer" style="display:none; margin-top:1.5rem; background:var(--bg-surface); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:1.5rem;">
+          <h4 style="font-size:1rem; color:#fff; margin-bottom:1rem;">Executive Deck Slide Breakdown</h4>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
+            <div style="background:var(--bg-card); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+              <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--telemetry-cyan);">SLIDE 1 · EXECUTIVE SUMMARY</span>
+              <strong style="display:block; color:#fff; font-size:0.85rem; margin:0.3rem 0;">Mandate & Core Findings</strong>
+              <p style="font-size:0.72rem; color:var(--text-secondary);">Dual-track payments framework across 284,807 transactions with 0.173% fraud prevalence.</p>
+            </div>
+            <div style="background:var(--bg-card); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+              <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--telemetry-cyan);">SLIDE 2 · MODEL COMPARISON</span>
+              <strong style="display:block; color:#fff; font-size:0.85rem; margin:0.3rem 0;">XGBoost vs Logistic Regression</strong>
+              <p style="font-size:0.72rem; color:var(--text-secondary);">AUPRC 0.9971 catches 98.98% fraud while slashing false-positive friction by 64%.</p>
+            </div>
+            <div style="background:var(--bg-card); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+              <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--telemetry-cyan);">SLIDE 3 · RFM PROFITABILITY</span>
+              <strong style="display:block; color:#fff; font-size:0.85rem; margin:0.3rem 0;">Customer Unit Economics</strong>
+              <p style="font-size:0.72rem; color:var(--text-secondary);">Champions generate 84.3% revenue at 3.16x profitability index.</p>
+            </div>
+            <div style="background:var(--bg-card); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+              <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--telemetry-cyan);">SLIDE 4 · RECOMMENDATION 1</span>
+              <strong style="display:block; color:#fff; font-size:0.85rem; margin:0.3rem 0;">XGBoost Production Cutover</strong>
+              <p style="font-size:0.72rem; color:var(--text-secondary);">$42.5K avoided revenue-at-risk with automated step-up auth.</p>
+            </div>
+            <div style="background:var(--bg-card); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+              <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--telemetry-cyan);">SLIDE 5 · RECOMMENDATION 2</span>
+              <strong style="display:block; color:#fff; font-size:0.85rem; margin:0.3rem 0;">Champions VIP Shield</strong>
+              <p style="font-size:0.72rem; color:var(--text-secondary);">Zero false-positive policy protecting 1,236 core cardholders.</p>
+            </div>
+            <div style="background:var(--bg-card); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+              <span style="font-family:var(--font-mono); font-size:0.7rem; color:var(--telemetry-cyan);">SLIDE 6 · RECOMMENDATION 3</span>
+              <strong style="display:block; color:#fff; font-size:0.85rem; margin:0.3rem 0;">90-Day Cohort Activation</strong>
+              <p style="font-size:0.72rem; color:var(--text-secondary);">Arresting retention drop-off from 100% to 48% at Month 3.</p>
+            </div>
           </div>
         </div>
       </div>
@@ -466,7 +944,7 @@
         <span>Swiss Modernist Industrial Fintech Architecture</span>
       </div>
       <div>
-        <span>Engineered with Python · FastAPI · PostgreSQL · XGBoost · Clean SVG Telemetry Engine</span>
+        <span>© 2026 Amey Dongre · Released under the MIT License · Python · FastAPI · XGBoost · Clean SVG Telemetry</span>
       </div>
     </div>
   </footer>
