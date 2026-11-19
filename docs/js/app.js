@@ -3,6 +3,36 @@
  * Swiss Modernist Industrial Fintech Terminal (Enterprise Tier-1 Payments Scheme).
  */
 
+function escapeHTML(str) {
+  if (str === null || str === undefined) return "";
+  return String(str).replace(/[&<>'"]/g, tag => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "'": "&#39;",
+    '"': "&quot;"
+  }[tag] || tag));
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"' || char === "'") {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim().replace(/^["']|["']$/g, ""));
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim().replace(/^["']|["']$/g, ""));
+  return result;
+}
+
 const EMBEDDED_CACHE = {
   overview: {
     total_transactions: 284807,
@@ -180,6 +210,7 @@ class SpendSenseApp {
     this.setupRecommendations();
     this.setupCustomerSuite();
     this.setupBatchAuditor();
+    this.setupBudgetAdvisor();
     this.setupApiPlayground();
     this.setupDeckPreview();
     this.renderInitialViews();
@@ -206,6 +237,12 @@ class SpendSenseApp {
         const statusEl = document.getElementById("header-engine-status");
         if (statusEl) {
           statusEl.textContent = health.database || "Connected (FastAPI)";
+        }
+        const apiDocsLink = document.getElementById("api-docs-nav-link");
+        if (apiDocsLink) {
+          apiDocsLink.href = "/api/docs";
+          apiDocsLink.target = "_blank";
+          apiDocsLink.textContent = "API Docs ↗";
         }
       }
     } catch (e) {
@@ -638,11 +675,10 @@ class SpendSenseApp {
       const lines = text.split("\n").filter(l => l.trim().length > 0);
       if (lines.length < 2) return;
 
-      const header = lines[0].toLowerCase().split(",").map(h => h.trim().replace(/"/g, ""));
       const parsed = [];
 
       for (let i = 1; i < lines.length; i++) {
-        const parts = lines[i].split(",").map(p => p.trim().replace(/"/g, ""));
+        const parts = parseCSVLine(lines[i]);
         if (parts.length >= 2) {
           const amount = parseFloat(parts[1] || parts[parts.length - 1] || "0");
           parsed.push({
@@ -729,16 +765,16 @@ class SpendSenseApp {
     if (tbody) {
       tbody.innerHTML = auditedList.map(item => `
         <tr>
-          <td style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);">${item.date}</td>
-          <td><strong style="color:#fff;">${item.merchant}</strong></td>
-          <td style="font-size:0.72rem; color:var(--text-secondary);">${item.category}</td>
-          <td class="num" style="color:#fff; font-weight:700;">$${item.amount.toFixed(2)}</td>
+          <td style="font-family:var(--font-mono); font-size:0.7rem; color:var(--text-muted);">${escapeHTML(item.date)}</td>
+          <td><strong style="color:#fff;">${escapeHTML(item.merchant)}</strong></td>
+          <td style="font-size:0.72rem; color:var(--text-secondary);">${escapeHTML(item.category)}</td>
+          <td class="num" style="color:#fff; font-weight:700;">$${Number(item.amount).toFixed(2)}</td>
           <td>
             <span class="readout-pill" style="font-size:0.68rem; color:${item.statusClass === 'alert' ? 'var(--telemetry-danger)' : (item.statusClass === 'amber' ? 'var(--telemetry-amber)' : 'var(--telemetry-safe)')};">
-              ${item.statusLabel}
+              ${escapeHTML(item.statusLabel)}
             </span>
           </td>
-          <td style="font-size:0.72rem; color:var(--text-secondary);">${item.finding}</td>
+          <td style="font-size:0.72rem; color:var(--text-secondary);">${escapeHTML(item.finding)}</td>
         </tr>
       `).join("");
     }
@@ -755,6 +791,108 @@ class SpendSenseApp {
     a.download = `SpendSense_Audit_Report_${new Date().toISOString().substring(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  setupBudgetAdvisor() {
+    const slider = document.getElementById("inp-budget-cap");
+    const sliderVal = document.getElementById("budget-slider-val");
+    const capLabel = document.getElementById("budget-cap-label");
+    const pacingBadge = document.getElementById("budget-pacing-badge");
+    const progressFill = document.getElementById("budget-progress-fill");
+    const surplusLabel = document.getElementById("budget-surplus-label");
+    const velocityDesc = document.getElementById("budget-velocity-desc");
+
+    const currentSpend = 3420.00;
+    const dailyVelocity = 114.00;
+    const projectedSpend = 4332.00;
+
+    if (slider) {
+      slider.addEventListener("input", (e) => {
+        const cap = parseFloat(e.target.value);
+        if (sliderVal) sliderVal.textContent = `$${cap.toLocaleString()}`;
+        if (capLabel) capLabel.textContent = `Budget Cap: $${cap.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+
+        const pct = Math.min(Math.round((currentSpend / cap) * 100), 100);
+        if (progressFill) {
+          progressFill.style.width = `${pct}%`;
+          progressFill.style.background = cap < projectedSpend ? "var(--telemetry-danger)" : "var(--telemetry-cyan)";
+        }
+
+        const surplus = cap - projectedSpend;
+        if (surplus >= 0) {
+          if (pacingBadge) {
+            pacingBadge.textContent = "Pacing: ON TRACK";
+            pacingBadge.style.color = "var(--telemetry-safe)";
+          }
+          if (surplusLabel) {
+            surplusLabel.textContent = `Under-budget surplus: +$${surplus.toFixed(2)}`;
+            surplusLabel.style.color = "var(--telemetry-safe)";
+          }
+        } else {
+          if (pacingBadge) {
+            pacingBadge.textContent = "Pacing: OVER BUDGET RISK";
+            pacingBadge.style.color = "var(--telemetry-danger)";
+          }
+          if (surplusLabel) {
+            surplusLabel.textContent = `Projected deficit: -$${Math.abs(surplus).toFixed(2)}`;
+            surplusLabel.style.color = "var(--telemetry-danger)";
+          }
+        }
+
+        if (velocityDesc) {
+          velocityDesc.innerHTML = `At current daily velocity of <strong>$${dailyVelocity}/day</strong>, projected end-of-month spend is <strong>$${projectedSpend.toLocaleString()}</strong> (${surplus >= 0 ? "safely under" : "exceeding"} your $${cap.toLocaleString()} ceiling).`;
+        }
+      });
+    }
+
+    const pruneGymBtn = document.getElementById("btn-prune-gym");
+    if (pruneGymBtn) {
+      pruneGymBtn.addEventListener("click", () => {
+        const isPruned = pruneGymBtn.dataset.pruned === "true";
+        const gymRow = document.getElementById("sub-gym-row");
+        const gymTitle = document.getElementById("sub-gym-title");
+        const gymDesc = document.getElementById("sub-gym-desc");
+        const gymCost = document.getElementById("sub-gym-cost");
+        const badge = document.getElementById("sub-active-badge");
+        const savingsLabel = document.getElementById("sub-savings-desc");
+
+        if (!isPruned) {
+          pruneGymBtn.dataset.pruned = "true";
+          pruneGymBtn.textContent = "Restored";
+          pruneGymBtn.style.color = "var(--telemetry-safe)";
+          pruneGymBtn.style.borderColor = "var(--telemetry-safe)";
+          pruneGymBtn.style.background = "rgba(0, 229, 153, 0.15)";
+          if (gymRow) gymRow.style.opacity = "0.5";
+          if (gymTitle) gymTitle.style.textDecoration = "line-through";
+          if (gymDesc) gymDesc.textContent = "Marked for immediate recurring cancellation";
+          if (gymCost) gymCost.style.textDecoration = "line-through";
+          if (badge) {
+            badge.textContent = "3 Recurring";
+            badge.style.color = "var(--telemetry-safe)";
+          }
+          if (savingsLabel) {
+            savingsLabel.innerHTML = `Annualized Leak Eliminated: <strong style="color:var(--telemetry-safe); font-size:0.8rem;">+$588.00 saved/yr</strong>`;
+          }
+        } else {
+          pruneGymBtn.dataset.pruned = "false";
+          pruneGymBtn.textContent = "Prune";
+          pruneGymBtn.style.color = "var(--telemetry-danger)";
+          pruneGymBtn.style.borderColor = "rgba(239,68,68,0.4)";
+          pruneGymBtn.style.background = "rgba(239,68,68,0.15)";
+          if (gymRow) gymRow.style.opacity = "1";
+          if (gymTitle) gymTitle.style.textDecoration = "none";
+          if (gymDesc) gymDesc.textContent = "Zero check-ins in 90 days";
+          if (gymCost) gymCost.style.textDecoration = "none";
+          if (badge) {
+            badge.textContent = "4 Recurring";
+            badge.style.color = "var(--telemetry-amber)";
+          }
+          if (savingsLabel) {
+            savingsLabel.innerHTML = `Potential Annual Savings Identified: <strong>$588.00 / year</strong>`;
+          }
+        }
+      });
+    }
   }
 
   setupApiPlayground() {

@@ -104,16 +104,12 @@ class Config:
 
     # ── Synthetic Enrichment ─────────────────
     MERCHANT_CATEGORIES: ClassVar[list[str]] = [
-        "Grocery",
-        "Gas Station",
-        "Restaurant",
-        "Online Retail",
-        "Travel",
-        "Entertainment",
-        "Healthcare",
-        "Utilities",
-        "Department Store",
-        "Electronics",
+        "Online Retail & E-Commerce",
+        "Travel & Airlines",
+        "Dining & Restaurants",
+        "Groceries & Supermarkets",
+        "Entertainment & Media",
+        "Fuel & Transportation",
     ]
     REFERENCE_START_DATE: str = "2023-01-01"  # Synthetic date anchor
     NUM_SYNTHETIC_CUSTOMERS: int = 5000

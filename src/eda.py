@@ -21,7 +21,7 @@ def get_overview_statistics() -> dict:
             COUNT(*) AS total_transactions,
             SUM(CASE WHEN is_fraud = 1 THEN 1 ELSE 0 END) AS fraud_count,
             SUM(CASE WHEN is_fraud = 0 THEN 1 ELSE 0 END) AS legitimate_count,
-            ROUND(100.0 * SUM(CASE WHEN is_fraud = 1 THEN 1 ELSE 0 END) / COUNT(*), 4) AS fraud_rate_pct,
+            ROUND(100.0 * SUM(CASE WHEN is_fraud = 1 THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0), 4) AS fraud_rate_pct,
             ROUND(SUM(amount), 2) AS total_amount,
             ROUND(SUM(CASE WHEN is_fraud = 1 THEN amount ELSE 0 END), 2) AS total_fraud_amount,
             ROUND(SUM(CASE WHEN is_fraud = 0 THEN amount ELSE 0 END), 2) AS total_legitimate_amount,
@@ -55,7 +55,7 @@ def get_monthly_fraud_trends() -> list[dict]:
             SUBSTR(ce.transaction_date, 1, 7) AS period,
             COUNT(*) AS txn_count,
             SUM(CASE WHEN t.is_fraud = 1 THEN 1 ELSE 0 END) AS fraud_count,
-            ROUND(100.0 * SUM(CASE WHEN t.is_fraud = 1 THEN 1 ELSE 0 END) / COUNT(*), 4) AS fraud_rate_pct,
+            ROUND(100.0 * SUM(CASE WHEN t.is_fraud = 1 THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0), 4) AS fraud_rate_pct,
             ROUND(SUM(CASE WHEN t.is_fraud = 1 THEN t.amount ELSE 0 END), 2) AS fraud_amount
         FROM transactions t
         JOIN customer_enrichment ce ON t.transaction_id = ce.transaction_id
@@ -84,7 +84,7 @@ def get_spend_by_merchant_category() -> list[dict]:
             ROUND(SUM(t.amount), 2) AS total_spend,
             ROUND(AVG(t.amount), 2) AS avg_spend,
             SUM(CASE WHEN t.is_fraud = 1 THEN 1 ELSE 0 END) AS fraud_count,
-            ROUND(100.0 * SUM(CASE WHEN t.is_fraud = 1 THEN 1 ELSE 0 END) / COUNT(*), 4) AS fraud_rate_pct
+            ROUND(100.0 * SUM(CASE WHEN t.is_fraud = 1 THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0), 4) AS fraud_rate_pct
         FROM transactions t
         JOIN customer_enrichment ce ON t.transaction_id = ce.transaction_id
         GROUP BY ce.merchant_category

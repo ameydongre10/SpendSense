@@ -35,7 +35,7 @@ def detect_billing_anomalies(limit_records: int = 50000) -> pd.DataFrame:
         limit_records,
     )
 
-    sql = f"""
+    sql = """
         SELECT
             t.transaction_id,
             ce.customer_id,
@@ -45,9 +45,9 @@ def detect_billing_anomalies(limit_records: int = 50000) -> pd.DataFrame:
         FROM transactions t
         JOIN customer_enrichment ce ON t.transaction_id = ce.transaction_id
         ORDER BY t.transaction_id ASC
-        LIMIT {limit_records}
+        LIMIT :limit_records
     """
-    rows = execute_sql(sql)
+    rows = execute_sql(sql, {"limit_records": int(limit_records)})
     if not rows:
         raise ValueError("No transaction records found for anomaly detection.")
 

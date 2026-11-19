@@ -80,7 +80,7 @@ def compute_rfm_segments(reference_date: str = "2024-07-01") -> pd.DataFrame:
         r, f, m = row["r_score"], row["f_score"], row["m_score"]
         if r >= 4 and f >= 4 and m >= 4:
             return "Champions"
-        elif f >= 4 and m >= 3:
+        elif f >= 4 and m >= 2:
             return "Loyal Spenders"
         elif r >= 4 and f <= 3:
             return "Potential Enthusiasts"
@@ -133,7 +133,7 @@ def get_segment_aggregates() -> list[dict]:
             ROUND(AVG(r.monetary), 2) AS avg_spend,
             ROUND(AVG(r.frequency), 1) AS avg_frequency,
             ROUND(AVG(r.recency_days), 1) AS avg_recency_days,
-            ROUND(100.0 * COUNT(r.customer_id) / (SELECT COUNT(*) FROM rfm_segments), 2) AS customer_share_pct
+            ROUND(100.0 * COUNT(r.customer_id) / NULLIF((SELECT COUNT(*) FROM rfm_segments), 0), 2) AS customer_share_pct
         FROM rfm_segments r
         GROUP BY r.segment_label
         ORDER BY total_spend DESC

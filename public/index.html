@@ -729,21 +729,28 @@
           <div class="terminal-panel" style="padding:1.25rem;">
             <div class="panel-header">
               <span class="panel-title"><span>📈</span> Burn Rate & Velocity Index</span>
-              <span class="slider-badge" style="color:var(--telemetry-safe);">Pacing: ON TRACK</span>
+              <span class="slider-badge" id="budget-pacing-badge" style="color:var(--telemetry-safe);">Pacing: ON TRACK</span>
             </div>
             <div style="margin-top:1rem;">
               <div style="display:flex; justify-content:space-between; align-items:baseline;">
-                <span class="num" style="font-size:1.8rem; font-weight:800; color:#fff;">$3,420.00</span>
-                <span style="font-size:0.75rem; color:var(--text-muted);">Budget Cap: $4,500.00</span>
+                <span class="num" id="budget-current-spend" style="font-size:1.8rem; font-weight:800; color:#fff;">$3,420.00</span>
+                <span style="font-size:0.75rem; color:var(--text-muted);" id="budget-cap-label">Budget Cap: $4,500.00</span>
               </div>
               <div class="risk-meter-bar-track" style="margin-top:0.5rem; height:8px;">
-                <div class="risk-meter-fill" style="width:76%; background:var(--telemetry-cyan);"></div>
+                <div class="risk-meter-fill" id="budget-progress-fill" style="width:76%; background:var(--telemetry-cyan);"></div>
               </div>
               <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem;">
                 <span>Month elapsed: 80%</span>
-                <span style="color:var(--telemetry-safe);">Under-budget surplus: +$180.00</span>
+                <span id="budget-surplus-label" style="color:var(--telemetry-safe);">Under-budget surplus: +$180.00</span>
               </div>
-              <p style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.75rem; line-height:1.4;">
+              <div class="slider-container" style="margin-top:0.75rem; padding:0.5rem 0 0 0;">
+                <div class="slider-label-row">
+                  <span class="slider-title" style="font-size:0.72rem;">Adjust Monthly Ceiling:</span>
+                  <span id="budget-slider-val" style="font-size:0.72rem; color:var(--telemetry-cyan); font-family:var(--font-mono); font-weight:700;">$4,500</span>
+                </div>
+                <input type="range" id="inp-budget-cap" min="2500" max="6000" step="250" value="4500" aria-label="Monthly Budget Ceiling">
+              </div>
+              <p id="budget-velocity-desc" style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.5rem; line-height:1.4;">
                 At current daily velocity of <strong>$114/day</strong>, projected end-of-month spend is $4,332, within your designated ceiling.
               </p>
             </div>
@@ -753,7 +760,7 @@
           <div class="terminal-panel" style="padding:1.25rem;">
             <div class="panel-header">
               <span class="panel-title"><span>🔍</span> Recurring Subscription Auditor</span>
-              <span class="slider-badge" style="color:var(--telemetry-amber);">4 Recurring</span>
+              <span class="slider-badge" id="sub-active-badge" style="color:var(--telemetry-amber);">4 Recurring</span>
             </div>
             <div style="margin-top:0.75rem; display:flex; flex-direction:column; gap:0.5rem;">
               <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.02); padding:0.5rem 0.75rem; border-radius:var(--radius-xs);">
@@ -770,15 +777,18 @@
                 </div>
                 <span class="num" style="color:#fff; font-size:0.8rem;">$14.99/mo</span>
               </div>
-              <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.2); padding:0.5rem 0.75rem; border-radius:var(--radius-xs);">
+              <div id="sub-gym-row" style="display:flex; justify-content:space-between; align-items:center; background:rgba(239,68,68,0.06); border:1px solid rgba(239,68,68,0.2); padding:0.5rem 0.75rem; border-radius:var(--radius-xs);">
                 <div>
-                  <strong style="color:var(--telemetry-danger); font-size:0.75rem;">Gym Membership (Unused)</strong>
-                  <span style="display:block; font-size:0.65rem; color:var(--text-muted);">Zero check-ins in 90 days</span>
+                  <strong id="sub-gym-title" style="color:var(--telemetry-danger); font-size:0.75rem;">Gym Membership (Unused)</strong>
+                  <span id="sub-gym-desc" style="display:block; font-size:0.65rem; color:var(--text-muted);">Zero check-ins in 90 days</span>
                 </div>
-                <span class="num" style="color:var(--telemetry-danger); font-size:0.8rem;">$49.00/mo</span>
+                <div style="display:flex; align-items:center; gap:0.5rem;">
+                  <span class="num" id="sub-gym-cost" style="color:var(--telemetry-danger); font-size:0.8rem;">$49.00/mo</span>
+                  <button type="button" id="btn-prune-gym" class="ctrl-btn" style="font-size:0.65rem; padding:0.2rem 0.5rem; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.4); color:var(--telemetry-danger); cursor:pointer;">Prune</button>
+                </div>
               </div>
             </div>
-            <div style="margin-top:0.75rem; font-size:0.72rem; color:var(--telemetry-safe);">
+            <div id="sub-savings-desc" style="margin-top:0.75rem; font-size:0.72rem; color:var(--telemetry-safe);">
               Potential Annual Savings Identified: <strong>$588.00 / year</strong>
             </div>
           </div>

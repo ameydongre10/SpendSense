@@ -72,7 +72,9 @@ def compute_cohort_retention() -> pd.DataFrame:
         cohort_data["customer_count"] / cohort_data["initial_size"] * 100.0
     ).round(2)
     cohort_data["total_spend"] = cohort_data["total_spend"].round(2)
-    cohort_data["avg_spend"] = cohort_data["avg_spend"].round(2)
+    cohort_data["avg_spend"] = (
+        cohort_data["total_spend"] / cohort_data["customer_count"].replace(0, 1)
+    ).round(2)
 
     logger.info(
         "Cohort matrix computed across %d cohort-period pairs.", len(cohort_data)

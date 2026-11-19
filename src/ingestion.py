@@ -170,8 +170,9 @@ def ingest_transactions_to_db(df: pd.DataFrame, batch_size: int = 10000) -> int:
     insert_df = insert_df[cols]
 
     logger.info("Ingesting %d transactions into database...", len(insert_df))
-    # Clear existing if needed
+    # Clear existing if needed (delete child tables first to respect foreign keys)
     with engine.begin() as conn:
+        conn.execute(text("DELETE FROM customer_enrichment"))
         conn.execute(text("DELETE FROM transactions"))
 
     # Insert in chunks

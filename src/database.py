@@ -336,9 +336,21 @@ def check_connection() -> bool:
         return False
 
 
+ALLOWED_TABLE_NAMES = frozenset({
+    "transactions",
+    "customer_enrichment",
+    "rfm_segments",
+    "cohort_analysis",
+    "billing_anomalies",
+    "model_results",
+    "business_metrics",
+    "segment_profitability",
+})
+
+
 def get_table_count(table: str) -> int:
-    """Return the row count for a given table."""
-    if not HAS_SQLALCHEMY:
+    """Return the row count for a given table with strict name whitelisting."""
+    if not HAS_SQLALCHEMY or table not in ALLOWED_TABLE_NAMES:
         return 0
     try:
         with get_connection() as conn:

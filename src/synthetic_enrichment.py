@@ -77,7 +77,7 @@ def generate_customer_enrichment(
 
     # Assign merchant categories
     categories = Config.MERCHANT_CATEGORIES
-    cat_weights = [0.18, 0.12, 0.20, 0.15, 0.08, 0.07, 0.06, 0.05, 0.05, 0.04]
+    cat_weights = [0.21, 0.17, 0.20, 0.16, 0.13, 0.13]
     cat_weights = np.array(cat_weights) / sum(cat_weights)
     assigned_categories = rng.choice(categories, size=n_transactions, p=cat_weights)
 

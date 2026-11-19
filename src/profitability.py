@@ -61,7 +61,7 @@ def compute_segment_profitability() -> pd.DataFrame:
         SELECT
             r.segment_label,
             COALESCE(SUM(CASE WHEN t.is_fraud = 1 THEN t.amount ELSE 0 END), 0.0) AS fraud_amount,
-            ROUND(100.0 * SUM(CASE WHEN t.is_fraud = 1 THEN 1 ELSE 0 END) / COUNT(t.transaction_id), 4) AS fraud_rate
+            ROUND(100.0 * SUM(CASE WHEN t.is_fraud = 1 THEN 1 ELSE 0 END) / NULLIF(COUNT(t.transaction_id), 0), 4) AS fraud_rate
         FROM rfm_segments r
         JOIN customer_enrichment ce ON r.customer_id = ce.customer_id
         JOIN transactions t ON ce.transaction_id = t.transaction_id
