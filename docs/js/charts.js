@@ -4,6 +4,17 @@
  * interactive tooltips, and real-time simulator recalculations.
  */
 
+window.escapeHTML = function escapeHTML(str) {
+  if (str === null || str === undefined) return "";
+  return String(str).replace(/[&<>'"]/g, tag => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "'": "&#39;",
+    '"': "&quot;"
+  }[tag] || tag));
+};
+
 window.Charts = {
   /**
    * Render Precision-Recall Curve comparing Logistic Regression vs XGBoost
@@ -329,7 +340,7 @@ window.Charts = {
           <tbody>
             ${cohorts.slice(0, 12).map(c => `
               <tr>
-                <td style="font-weight:700; color:#fff;">${c.cohort_month}</td>
+                <td style="font-weight:700; color:#fff;">${escapeHTML(c.cohort_month)}</td>
                 <td class="table-num">${c.cohort_size}</td>
                 ${c.retention.map(val => {
                   if (val === null || val === undefined) return `<td style="color:#334155;">-</td>`;
@@ -387,7 +398,7 @@ window.Charts = {
             const isTop = dynamicIndex >= 2.0;
             return `
               <tr>
-                <td style="font-weight:700; color:#fff;">${s.segment_label}</td>
+                <td style="font-weight:700; color:#fff;">${escapeHTML(s.segment_label)}</td>
                 <td class="table-num">${s.customer_count.toLocaleString()}</td>
                 <td class="table-num">$${s.total_spend.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
                 <td class="table-num" style="color:#00B4D8;">$${s.gross.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
@@ -431,12 +442,12 @@ window.Charts = {
             return `
               <tr data-idx="${i}">
                 <td class="table-num" style="color:#00B4D8; font-weight:600;">#${a.transaction_id}</td>
-                <td style="color:#fff;">${a.customer_id}</td>
-                <td>${a.merchant_category || "General"}</td>
+                <td style="color:#fff;">${escapeHTML(a.customer_id)}</td>
+                <td>${escapeHTML(a.merchant_category || "General")}</td>
                 <td class="table-num" style="font-weight:700; color:#fff;">$${a.amount.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
-                <td><span class="classification-tag" style="font-size:0.65rem;">${a.method}</span></td>
+                <td><span class="classification-tag" style="font-size:0.65rem;">${escapeHTML(a.method)}</span></td>
                 <td class="table-num" style="${isExtreme ? 'color:#EF4444; font-weight:700;' : 'color:#F59E0B;'}">${a.score.toFixed(2)}</td>
-                <td style="font-size:0.75rem; color:#94A3B8; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${a.reason}</td>
+                <td style="font-size:0.75rem; color:#94A3B8; max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${escapeHTML(a.reason)}</td>
               </tr>
             `;
           }).join("")}

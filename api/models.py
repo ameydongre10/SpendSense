@@ -236,15 +236,17 @@ class HealthResponse(BaseModel):
 class TransactionScoreRequest(BaseModel):
     """POST /api/fraud/score — evaluate a single transaction in real-time."""
 
-    cardholder_id: str = Field(default="CARD-89241", description="Unique cardholder identifier")
-    amount: float = Field(default=120.50, ge=0.01, description="Transaction ticket amount in USD")
+    cardholder_id: str = Field(default="CARD-89241", min_length=1, max_length=64, description="Unique cardholder identifier")
+    amount: float = Field(default=120.50, ge=0.01, le=10_000_000.0, description="Transaction ticket amount in USD")
     merchant_category: str = Field(
         default="Online Retail & E-Commerce",
+        min_length=1,
+        max_length=64,
         description="MCC category: Travel & Airlines, Dining & Restaurants, Online Retail & E-Commerce, Groceries & Supermarkets, Entertainment & Media, Fuel & Transportation",
     )
     time_hour: int = Field(default=14, ge=0, le=23, description="Hour of transaction (0-23)")
     is_cross_border: bool = Field(default=False, description="Whether transaction is international")
-    velocity_last_24h: int = Field(default=2, ge=0, description="Card transaction count in last 24 hours")
+    velocity_last_24h: int = Field(default=2, ge=0, le=10_000, description="Card transaction count in last 24 hours")
     device_trust_score: float = Field(default=0.95, ge=0.0, le=1.0, description="Device reputation score (0.0 to 1.0)")
 
 

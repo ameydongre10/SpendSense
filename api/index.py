@@ -8,6 +8,7 @@ Guarantees 100% route matching regardless of Vercel internal rewrite behavior.
 """
 
 from datetime import datetime, timezone
+import html
 import json
 import math
 import os
@@ -268,13 +269,13 @@ async def get_fraud_model():
 
 
 class ScoreRequest(BaseModel):
-    cardholder_id: str = "CARD-89241"
-    amount: float = 120.50
-    merchant_category: str = "Online Retail & E-Commerce"
-    time_hour: int = 14
+    cardholder_id: str = Field(default="CARD-89241", min_length=1, max_length=64)
+    amount: float = Field(default=120.50, ge=0.01, le=10_000_000.0)
+    merchant_category: str = Field(default="Online Retail & E-Commerce", min_length=1, max_length=64)
+    time_hour: int = Field(default=14, ge=0, le=23)
     is_cross_border: bool = False
-    velocity_last_24h: int = 2
-    device_trust_score: float = 0.95
+    velocity_last_24h: int = Field(default=2, ge=0, le=10_000)
+    device_trust_score: float = Field(default=0.95, ge=0.0, le=1.0)
 
 
 CATEGORY_BENCHMARKS = {
@@ -295,13 +296,14 @@ async def score_transaction(req: ScoreRequest):
 
     logit = -4.5
     factors = []
+    clean_cat = html.escape(req.merchant_category)
 
     cat_logit = benchmark["base_logit"]
     logit += cat_logit
     factors.append({
         "factor": "Merchant Category Risk",
         "impact": "medium" if cat_logit >= 0.4 else ("safe" if cat_logit < 0 else "low"),
-        "description": f"Category '{req.merchant_category}' statistical profile.",
+        "description": f"Category '{clean_cat}' statistical profile.",
         "weight": round(cat_logit, 2),
     })
 

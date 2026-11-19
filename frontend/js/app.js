@@ -587,14 +587,14 @@ class SpendSenseApp {
         return `
           <tr>
             <td>
-              <strong style="color:#fff; display:block;">${f.factor}</strong>
-              <span style="font-size:0.7rem; color:var(--text-muted);">${f.description}</span>
+              <strong style="color:#fff; display:block;">${escapeHTML(f.factor)}</strong>
+              <span style="font-size:0.7rem; color:var(--text-muted);">${escapeHTML(f.description)}</span>
             </td>
             <td>
-              <span style="color:${tagColor}; font-weight:700; text-transform:uppercase; font-size:0.68rem; font-family:var(--font-mono);">${f.impact}</span>
+              <span style="color:${tagColor}; font-weight:700; text-transform:uppercase; font-size:0.68rem; font-family:var(--font-mono);">${escapeHTML(f.impact)}</span>
             </td>
             <td class="num" style="color:#fff; font-size:0.75rem;">
-              ${f.weight > 0 ? "+" : ""}${f.weight.toFixed(2)}
+              ${f.weight > 0 ? "+" : ""}${Number(f.weight).toFixed(2)}
             </td>
           </tr>
         `;
@@ -1211,7 +1211,7 @@ class SpendSenseApp {
     drawer.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <strong style="color:#fff; font-size:1rem;">${cat.category}</strong>
+          <strong style="color:#fff; font-size:1rem;">${escapeHTML(cat.category)}</strong>
           <div style="font-size:0.75rem; color:#94A3B8; margin-top:0.2rem;">
             Gross Spend: $${cat.total_spend.toLocaleString()} (${cat.spend_share_pct}%) · Total Volume: ${cat.transaction_count.toLocaleString()} txns · Average Ticket: $${cat.avg_ticket.toFixed(2)}
           </div>
@@ -1230,13 +1230,13 @@ class SpendSenseApp {
     drawer.innerHTML = `
       <div style="display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <strong style="color:#fff; font-size:1rem;">${seg.segment_label} Tier</strong>
+          <strong style="color:#fff; font-size:1rem;">${escapeHTML(seg.segment_label)} Tier</strong>
           <div style="font-size:0.75rem; color:#94A3B8; margin-top:0.2rem;">
             ${seg.customer_count.toLocaleString()} Cardholders (${seg.revenue_share}% of net portfolio revenue) · Avg Recency: ${seg.avg_recency} days
           </div>
         </div>
         <div style="font-size:0.8rem; font-weight:700; color:#00E599; background:rgba(0,229,153,0.1); padding:0.25rem 0.6rem; border-radius:4px;">
-          Action: ${seg.action}
+          Action: ${escapeHTML(seg.action)}
         </div>
       </div>
     `;
@@ -1253,18 +1253,18 @@ class SpendSenseApp {
           <div>
             <div class="rec-header">
               <span class="rec-number">${rec.id}</span>
-              <span class="rec-priority ${priorityClass}">${rec.priority_label}</span>
+              <span class="rec-priority ${priorityClass}">${escapeHTML(rec.priority_label)}</span>
             </div>
-            <h4 class="rec-title">${rec.title}</h4>
-            <p class="rec-body">${rec.body}</p>
+            <h4 class="rec-title">${escapeHTML(rec.title)}</h4>
+            <p class="rec-body">${escapeHTML(rec.body)}</p>
           </div>
 
           <div>
             <div class="rec-metrics-box">
               ${rec.metrics.map(m => `
                 <div class="rec-metric-row">
-                  <span class="rec-metric-label">${m.label}</span>
-                  <span class="rec-metric-value num">${m.value}</span>
+                  <span class="rec-metric-label">${escapeHTML(m.label)}</span>
+                  <span class="rec-metric-value num">${escapeHTML(m.value)}</span>
                 </div>
               `).join("")}
             </div>

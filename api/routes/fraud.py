@@ -7,6 +7,7 @@ Exposes endpoints for:
 """
 
 from datetime import datetime, timezone
+import html
 import json
 import logging
 import math
@@ -153,6 +154,7 @@ def evaluate_transaction_risk(req: TransactionScoreRequest) -> TransactionScoreR
 
     logit = -4.5  # Base intercept for ~1% default probability
     factors: list[RiskAttributionFactor] = []
+    clean_category = html.escape(req.merchant_category)
 
     # 1. Merchant Category Baseline
     cat_logit = benchmark["base_logit"]
@@ -162,7 +164,7 @@ def evaluate_transaction_risk(req: TransactionScoreRequest) -> TransactionScoreR
             RiskAttributionFactor(
                 factor="Merchant Category Risk",
                 impact="medium" if cat_logit >= 0.4 else "low",
-                description=f"Industry category '{req.merchant_category}' carries elevated chargeback frequency.",
+                description=f"Industry category '{clean_category}' carries elevated chargeback frequency.",
                 weight=round(cat_logit, 2),
             )
         )
@@ -171,7 +173,7 @@ def evaluate_transaction_risk(req: TransactionScoreRequest) -> TransactionScoreR
             RiskAttributionFactor(
                 factor="Merchant Category Risk",
                 impact="safe",
-                description=f"Category '{req.merchant_category}' exhibits low historical fraud incidence.",
+                description=f"Category '{clean_category}' exhibits low historical fraud incidence.",
                 weight=round(cat_logit, 2),
             )
         )
